@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { CookieBanner } from "@/components/ui/cookie-banner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -109,6 +110,7 @@ export default function RootLayout({
           {children}
           <CookieBanner />
           <SpeedInsights />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
