@@ -234,7 +234,7 @@ export function Categories() {
                   <div className="relative flex items-center justify-between pt-1 border-t border-border">
                     <span className={`text-xs font-semibold ${cat.color}`}>
                       {counts[cat.name] != null
-                        ? `${counts[cat.name].toLocaleString()} listings`
+                        ? `${(counts[cat.name] ?? 0).toLocaleString()} listings`
                         : "— listings"}
                     </span>
                     <ArrowRight className={`h-3.5 w-3.5 text-muted-foreground group-hover:${cat.color} group-hover:translate-x-0.5 transition-all duration-300`} />
