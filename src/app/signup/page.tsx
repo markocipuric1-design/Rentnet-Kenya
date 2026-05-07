@@ -25,7 +25,7 @@ const KENYAN_COUNTIES = [
   "Samburu", "West Pokot", "Turkana", "Marsabit", "Isiolo",
   "Garissa", "Wajir", "Mandera", "Tana River", "Lamu",
   "Kitui", "Makueni", "Nyandarua", "Kirinyaga", "Bomet",
-  "Kericho", "Narok", "Kajiado", "Taita-Taveta",
+  "Kericho", "Narok",
 ];
 
 const KENYAN_CITIES = [
@@ -299,7 +299,7 @@ export default function SignUpPage() {
     });
 
     if (signUpError) {
-      setErrors({ submit: signUpError.message === "User already registered" ? "This email address is already registered." : "Registration error. Please try again." });
+      setErrors({ submit: signUpError.message === "User already registered" ? "This email address is already registered." : signUpError.message.includes("rate limit") ? "Too many attempts. Please wait a few minutes and try again." : "Registration error. Please try again." });
       setLoading(false);
       return;
     }
