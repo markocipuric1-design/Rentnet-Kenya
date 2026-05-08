@@ -36,14 +36,14 @@ export const metadata: Metadata = {
     description:
       "Find houses, apartments, land and commercial properties for sale or rent across Kenya. Thousands of verified listings.",
     url: "https://rentnet.co.ke",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Rentnet – Kenya Real Estate" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Rentnet – Kenya Real Estate" }],
   },
   twitter: {
     card: "summary_large_image",
     site: "@rentnet_ke",
     title: "Rentnet – Buy, Rent & Sell Property in Kenya",
     description: "Find houses, apartments, land and commercial properties for sale or rent across Kenya.",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -77,7 +77,7 @@ export default function RootLayout({
                   "url": "https://rentnet.co.ke",
                   "logo": {
                     "@type": "ImageObject",
-                    "url": "https://rentnet.co.ke/logo.png",
+                    "url": "https://rentnet.co.ke/opengraph-image",
                     "width": 200,
                     "height": 60,
                   },

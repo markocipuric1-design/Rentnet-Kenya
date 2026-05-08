@@ -31,7 +31,7 @@ const TYPE_COLOR: Record<string, string> = {
 const PLACEHOLDER = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80";
 
 const tabs = [
-  { id: "vse",     label: "Vse",       filter: (_: Listing) => true },
+  { id: "vse",     label: "All",       filter: (_: Listing) => true },
   { id: "For Sale", label: "For Sale",  filter: (l: Listing) => l.type === "For Sale" },
   { id: "For Rent", label: "For Rent",  filter: (l: Listing) => l.type === "For Rent" },
   { id: "Buying",   label: "Buying",    filter: (l: Listing) => l.type === "Buying" },

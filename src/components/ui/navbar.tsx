@@ -210,30 +210,33 @@ export function Navbar() {
   return (
     <>
       {/* ── Layer 1: Partner bar ──────────────────────────────────────────── */}
-      <div className="hidden lg:block bg-muted border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex items-center gap-0 overflow-x-auto scrollbar-hide">
-          {partnerLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="flex-shrink-0 text-xs text-muted-foreground hover:text-foreground px-3 py-1 transition-colors whitespace-nowrap border-r border-border last:border-r-0"
-            >
-              {link.label}
-            </Link>
-          ))}
+      <div className="hidden lg:block bg-muted border-b border-border relative z-[60]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-0">
+          {/* Scrollable partner links */}
+          <div className="flex items-center overflow-x-auto scrollbar-hide py-1.5">
+            {partnerLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="flex-shrink-0 text-xs text-muted-foreground hover:text-foreground px-3 py-1 transition-colors whitespace-nowrap border-r border-border"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
 
-          {/* Craftsmen dropdown */}
-          <div className="relative flex-shrink-0" data-dropdown>
+          {/* Craftsmen dropdown — outside overflow container so panel isn't clipped */}
+          <div className="relative flex-shrink-0 border-l border-border" data-dropdown>
             <button
               onClick={() => setOpenDropdown(openDropdown === "craftsmen" ? null : "craftsmen")}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-3 py-1 transition-colors whitespace-nowrap"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 transition-colors whitespace-nowrap"
             >
               <Wrench className="h-3 w-3" />
               Craftsmen
               <ChevronDown className={`h-3 w-3 transition-transform ${openDropdown === "craftsmen" ? "rotate-180" : ""}`} />
             </button>
             {openDropdown === "craftsmen" && (
-              <div className="absolute top-full left-0 mt-1 bg-card border border-border shadow-xl rounded-xl z-50 p-4 w-[480px]">
+              <div className="absolute top-full right-0 mt-1 bg-card border border-border shadow-xl rounded-xl z-[70] p-4 w-[480px]">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Craftsmen Directory</p>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1">
                   {craftsmenGroups.map((group) => (
