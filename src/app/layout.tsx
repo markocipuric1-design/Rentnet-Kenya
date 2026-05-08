@@ -14,6 +14,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  verification: {
+    google: "v9lfEkJN8oE1ia-z5xV-6X_Erw1kilLc6JJfgfU5V3Q",
+  },
   title: {
     default: "Rentnet – Buy, Rent & Sell Property in Kenya",
     template: "%s | Rentnet",
