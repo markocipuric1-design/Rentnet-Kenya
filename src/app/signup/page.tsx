@@ -361,6 +361,12 @@ export default function SignUpPage() {
     setLoading(false);
     setRegistrationPending(profileModerationOn);
     setSuccess(true);
+
+    fetch("/api/send-welcome", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: form.email.trim(), name: fullName }),
+    }).catch(() => {});
   };
 
   // ─── success screen ────────────────────────────────────────────────────────
