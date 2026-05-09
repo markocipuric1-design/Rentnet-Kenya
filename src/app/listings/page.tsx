@@ -156,29 +156,29 @@ function PropertyCard({ listing, view, isAdmin, onEdit, onDelete }: {
     return (
       <div className="group bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-300 flex relative">
         <Link href={`/properties/${listing.slug ?? listing.id}`} className="contents">
-          <div className="relative w-48 flex-shrink-0 overflow-hidden">
+          <div className="relative w-28 sm:w-48 flex-shrink-0 overflow-hidden">
             <Image src={listing.image ?? PLACEHOLDER} alt={listing.title}
               fill className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="192px" />
-            <div className="absolute top-2.5 left-2.5">
+              sizes="(max-width: 640px) 112px, 192px" />
+            <div className="absolute top-2 left-2">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${TYPE_COLOR[listing.type] ?? "bg-muted"}`}>{listing.type}</span>
             </div>
           </div>
-          <div className="flex-1 p-4 flex flex-col justify-between">
+          <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between min-w-0">
             <div>
-              <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">{listing.title}</h3>
+              <h3 className="font-semibold text-foreground text-xs sm:text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">{listing.title}</h3>
               <div className="flex items-center gap-1 mt-1 text-muted-foreground">
                 <MapPin className="h-3 w-3 text-primary flex-shrink-0" />
-                <span className="text-sm">{listing.city}</span>
+                <span className="text-xs sm:text-sm truncate">{listing.city}</span>
               </div>
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                {(listing.rooms ?? 0) > 0 && <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" />{listing.rooms} {listing.rooms === 1 ? "bed" : "beds"}</span>}
-                {listing.area && <span className="flex items-center gap-1"><Square className="h-3.5 w-3.5" />{listing.area} m²</span>}
+            <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border gap-2">
+              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
+                {(listing.rooms ?? 0) > 0 && <span className="flex items-center gap-1"><Bed className="h-3 w-3 sm:h-3.5 sm:w-3.5" />{listing.rooms} {listing.rooms === 1 ? "bed" : "beds"}</span>}
+                {listing.area && <span className="flex items-center gap-1"><Square className="h-3 w-3 sm:h-3.5 sm:w-3.5" />{listing.area} m²</span>}
               </div>
-              <div className="text-right">
-                <span className="font-bold text-lg text-foreground">{formatPrice(listing.price, listing.type)}</span>
+              <div className="text-right flex-shrink-0">
+                <span className="font-bold text-xs sm:text-lg text-foreground">{formatPrice(listing.price, listing.type)}</span>
               </div>
             </div>
           </div>

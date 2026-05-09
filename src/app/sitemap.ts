@@ -60,6 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/privacy-policy`,    lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
     { url: `${base}/terms`,             lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
     { url: `${base}/cookie-policy`,     lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${base}/data-deletion`,     lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
     { url: `${base}/about`,             lastModified: now, changeFrequency: "monthly", priority: 0.6 },
 
     // ── Blog categories ───────────────────────────────────────────────────────

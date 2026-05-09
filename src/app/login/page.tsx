@@ -47,6 +47,14 @@ export default function LoginPage() {
     });
   };
 
+  const handleFacebook = async () => {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
@@ -89,8 +97,8 @@ export default function LoginPage() {
                     </button>
                     <button
                       type="button"
-                      className="flex items-center justify-center gap-2 border border-border hover:border-primary/40 hover:bg-accent rounded-xl py-2.5 text-sm font-medium transition-all opacity-50 cursor-not-allowed"
-                      disabled
+                      onClick={handleFacebook}
+                      className="flex items-center justify-center gap-2 border border-border hover:border-primary/40 hover:bg-accent rounded-xl py-2.5 text-sm font-medium transition-all"
                     >
                       <span className="text-base">f</span>
                       Facebook

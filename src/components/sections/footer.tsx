@@ -31,6 +31,7 @@ const links = {
     { label: "FAQ", href: "/faq" },
     { label: "Terms of Use", href: "/terms" },
     { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "Data Deletion", href: "/data-deletion" },
   ],
 };
 
@@ -91,6 +92,7 @@ export function Footer() {
             { label: "Privacy", href: "/privacy-policy" },
             { label: "Terms", href: "/terms" },
             { label: "Cookies", href: "/cookie-policy" },
+            { label: "Data Deletion", href: "/data-deletion" },
           ].map((l) => (
             <Link key={l.label} href={l.href} className="hover:text-primary transition-colors">
               {l.label}

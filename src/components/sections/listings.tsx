@@ -31,20 +31,20 @@ const TYPE_COLOR: Record<string, string> = {
 const PLACEHOLDER = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80";
 
 const tabs = [
-  { id: "vse",     label: "All",       filter: (_: Listing) => true },
-  { id: "For Sale", label: "For Sale",  filter: (l: Listing) => l.type === "For Sale" },
-  { id: "For Rent", label: "For Rent",  filter: (l: Listing) => l.type === "For Rent" },
-  { id: "Buying",   label: "Buying",    filter: (l: Listing) => l.type === "Buying" },
-  { id: "Renting",  label: "Renting",   filter: (l: Listing) => l.type === "Renting" },
+  { id: "vse",      label: "All",      filter: (_: Listing) => true },
+  { id: "For Sale", label: "For Sale", filter: (l: Listing) => l.type === "For Sale" },
+  { id: "For Rent", label: "For Rent", filter: (l: Listing) => l.type === "For Rent" },
+  { id: "Buying",   label: "Buying",   filter: (l: Listing) => l.type === "Buying" },
+  { id: "Renting",  label: "Renting",  filter: (l: Listing) => l.type === "Renting" },
 ];
 
-function ListingCard({ listing }: { listing: Listing }) {
+function ListingCard({ listing, compact = false }: { listing: Listing; compact?: boolean }) {
   const [faved, setFaved] = useState(false);
 
   return (
     <Link href={`/properties/${listing.slug ?? listing.id}`}
       className="group bg-card rounded-2xl overflow-hidden border border-border hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer h-full flex flex-col">
-      <div className="relative overflow-hidden h-40 flex-shrink-0">
+      <div className={`relative overflow-hidden flex-shrink-0 ${compact ? "h-32" : "h-36 sm:h-40"}`}>
         <Image
           src={listing.image ?? PLACEHOLDER}
           alt={listing.title}
@@ -65,8 +65,8 @@ function ListingCard({ listing }: { listing: Listing }) {
         </button>
       </div>
 
-      <div className="p-3.5 flex flex-col flex-1">
-        <h3 className="font-semibold text-foreground text-sm mt-1 leading-snug line-clamp-1 group-hover:text-primary transition-colors duration-200">
+      <div className="p-2.5 sm:p-3.5 flex flex-col flex-1">
+        <h3 className="font-semibold text-foreground text-xs sm:text-sm mt-1 leading-snug line-clamp-1 group-hover:text-primary transition-colors duration-200">
           {listing.title}
         </h3>
         <div className="flex items-center gap-1 mt-1 text-muted-foreground">
@@ -83,7 +83,7 @@ function ListingCard({ listing }: { listing: Listing }) {
               <span className="flex items-center gap-1 text-xs"><Square className="h-3 w-3" />{listing.area} m²</span>
             )}
           </div>
-          <span className="font-bold text-sm text-foreground">
+          <span className="font-bold text-xs sm:text-sm text-foreground">
             {formatPrice(listing.price, listing.type)}
           </span>
         </div>
@@ -95,7 +95,7 @@ function ListingCard({ listing }: { listing: Listing }) {
 function SkeletonCard() {
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden animate-pulse h-full flex flex-col">
-      <div className="h-40 bg-muted flex-shrink-0" />
+      <div className="h-32 bg-muted flex-shrink-0" />
       <div className="p-3.5 flex flex-col gap-3 flex-1">
         <div className="h-4 bg-muted rounded-full w-4/5" />
         <div className="h-3 bg-muted rounded-full w-1/2" />
@@ -111,14 +111,24 @@ function SkeletonCard() {
   );
 }
 
+const btnClass = "w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all";
+
 export function Listings() {
   const [activeTab, setActiveTab] = useState("vse");
   const [allListings, setAllListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Mobile carousel
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", slidesToScroll: 1 });
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Desktop 2-row carousel
+  const [emblaRefDesktop, emblaApiDesktop] = useEmblaCarousel({ align: "start", slidesToScroll: 1 });
+  const [canScrollPrevDesktop, setCanScrollPrevDesktop] = useState(false);
+  const [canScrollNextDesktop, setCanScrollNextDesktop] = useState(true);
+  const [selectedIndexDesktop, setSelectedIndexDesktop] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -132,10 +142,7 @@ export function Listings() {
 
       if (listingsError) console.error("Listings fetch error:", listingsError.message);
 
-      if (!listings || listings.length === 0) {
-        setLoading(false);
-        return;
-      }
+      if (!listings || listings.length === 0) { setLoading(false); return; }
 
       const ids = listings.map((l) => l.id);
       const { data: photos } = await supabase
@@ -145,9 +152,7 @@ export function Listings() {
         .order("position", { ascending: true });
 
       const photoMap: Record<string, string> = {};
-      (photos ?? []).forEach((p) => {
-        if (!photoMap[p.listing_id]) photoMap[p.listing_id] = p.url;
-      });
+      (photos ?? []).forEach((p) => { if (!photoMap[p.listing_id]) photoMap[p.listing_id] = p.url; });
 
       setAllListings(listings.map((l) => ({ ...l, image: photoMap[l.id] ?? null })));
       setLoading(false);
@@ -156,12 +161,25 @@ export function Listings() {
 
   const filtered = allListings.filter(tabs.find(t => t.id === activeTab)?.filter ?? (() => true));
 
+  // Group into pairs for desktop 2-row layout
+  const pairs: [Listing, Listing | null][] = [];
+  for (let i = 0; i < filtered.length; i += 2) {
+    pairs.push([filtered[i], filtered[i + 1] ?? null]);
+  }
+
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setCanScrollPrev(emblaApi.canScrollPrev());
     setCanScrollNext(emblaApi.canScrollNext());
     setSelectedIndex(emblaApi.selectedScrollSnap());
   }, [emblaApi]);
+
+  const onSelectDesktop = useCallback(() => {
+    if (!emblaApiDesktop) return;
+    setCanScrollPrevDesktop(emblaApiDesktop.canScrollPrev());
+    setCanScrollNextDesktop(emblaApiDesktop.canScrollNext());
+    setSelectedIndexDesktop(emblaApiDesktop.selectedScrollSnap());
+  }, [emblaApiDesktop]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -171,10 +189,21 @@ export function Listings() {
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    emblaApi?.scrollTo(0, true);
-  }, [activeTab, emblaApi]);
+    if (!emblaApiDesktop) return;
+    emblaApiDesktop.on("select", onSelectDesktop);
+    emblaApiDesktop.on("reInit", onSelectDesktop);
+    onSelectDesktop();
+  }, [emblaApiDesktop, onSelectDesktop]);
 
-  const displayItems = loading ? Array.from({ length: 6 }) : filtered;
+  useEffect(() => {
+    emblaApi?.scrollTo(0, true);
+    emblaApiDesktop?.scrollTo(0, true);
+  }, [activeTab, emblaApi, emblaApiDesktop]);
+
+  const displayItems = loading ? Array.from({ length: 8 }) : filtered;
+  const displayPairs = loading
+    ? Array.from({ length: 4 }, (_, i) => [i * 2, i * 2 + 1] as unknown as [Listing, Listing | null])
+    : pairs;
 
   return (
     <section className="py-20 px-6 bg-background">
@@ -189,19 +218,21 @@ export function Listings() {
             <Link href="/listings" className="text-sm font-semibold text-primary hover:underline underline-offset-4 flex items-center gap-1">
               All listings <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-            <div className="flex gap-2">
-              <button
-                onClick={() => emblaApi?.scrollPrev()}
-                disabled={!canScrollPrev}
-                className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
+            {/* Mobile nav buttons */}
+            <div className="flex gap-2 lg:hidden">
+              <button onClick={() => emblaApi?.scrollPrev()} disabled={!canScrollPrev} className={btnClass}>
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <button
-                onClick={() => emblaApi?.scrollNext()}
-                disabled={!canScrollNext}
-                className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
+              <button onClick={() => emblaApi?.scrollNext()} disabled={!canScrollNext} className={btnClass}>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            {/* Desktop nav buttons */}
+            <div className="hidden lg:flex gap-2">
+              <button onClick={() => emblaApiDesktop?.scrollPrev()} disabled={!canScrollPrevDesktop} className={btnClass}>
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button onClick={() => emblaApiDesktop?.scrollNext()} disabled={!canScrollNextDesktop} className={btnClass}>
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
@@ -234,10 +265,11 @@ export function Listings() {
           </div>
         ) : (
           <>
-            <div className="overflow-hidden" ref={emblaRef}>
+            {/* ── Mobile carousel: single row, swipeable ── */}
+            <div className="lg:hidden overflow-hidden" ref={emblaRef}>
               <div className="flex gap-4">
                 {displayItems.map((l, i) => (
-                  <div key={loading ? i : (l as Listing).id} className="flex-none w-[calc(50%-8px)] sm:w-[calc(33.33%-11px)] lg:w-[calc(25%-12px)]">
+                  <div key={loading ? i : (l as Listing).id} className="flex-none w-[78%] sm:w-[calc(50%-8px)]">
                     {loading ? <SkeletonCard /> : <ListingCard listing={l as Listing} />}
                   </div>
                 ))}
@@ -245,14 +277,40 @@ export function Listings() {
             </div>
 
             {!loading && filtered.length > 1 && (
-              <div className="flex gap-2 justify-center mt-5">
+              <div className="lg:hidden flex gap-2 justify-center mt-5">
                 {filtered.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => emblaApi?.scrollTo(i)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === selectedIndex ? "bg-primary w-6" : "bg-border w-1.5"
-                    }`}
+                  <button key={i} onClick={() => emblaApi?.scrollTo(i)}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${i === selectedIndex ? "bg-primary w-6" : "bg-border w-1.5"}`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* ── Desktop carousel: 2 rows per column, swipeable ── */}
+            <div className="hidden lg:block overflow-hidden" ref={emblaRefDesktop}>
+              <div className="flex gap-4">
+                {displayPairs.map((pair, i) => (
+                  <div key={i} className="flex-none w-[calc(25%-12px)] flex flex-col gap-4">
+                    {loading ? (
+                      <><SkeletonCard /><SkeletonCard /></>
+                    ) : (
+                      <>
+                        <ListingCard listing={(pair as [Listing, Listing | null])[0]} compact />
+                        {(pair as [Listing, Listing | null])[1] && (
+                          <ListingCard listing={(pair as [Listing, Listing | null])[1]!} compact />
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {!loading && pairs.length > 1 && (
+              <div className="hidden lg:flex gap-2 justify-center mt-5">
+                {pairs.map((_, i) => (
+                  <button key={i} onClick={() => emblaApiDesktop?.scrollTo(i)}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${i === selectedIndexDesktop ? "bg-primary w-6" : "bg-border w-1.5"}`}
                   />
                 ))}
               </div>
