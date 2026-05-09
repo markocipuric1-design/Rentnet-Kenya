@@ -306,11 +306,6 @@ export default function SignUpPage() {
 
     let profileModerationOn = false;
     if (data.user) {
-      // Check if profile moderation is enabled
-      const { data: settingsRows } = await supabase.from("site_settings").select("key, value");
-      const settings = Object.fromEntries((settingsRows ?? []).map(r => [r.key, r.value]));
-      profileModerationOn = settings["profile_moderation_enabled"] === "true";
-
       let avatar_url: string | null = null;
       if (avatarFile) {
         const processed = await processImage(avatarFile, 400);
@@ -322,10 +317,7 @@ export default function SignUpPage() {
         }
       }
 
-      // Core save — only confirmed columns
       const corePayload: Record<string, unknown> = {
-        profile_status: profileModerationOn ? "pending" : "active",
-        id: data.user.id,
         full_name: fullName,
         email: form.email.trim(),
         phone: `${form.phonePrefix}${form.phone}`.trim(),
@@ -340,21 +332,24 @@ export default function SignUpPage() {
           founded_year: form.foundedYear ? parseInt(form.foundedYear) : null,
         } : {}),
       };
-      const { error: profileError } = await supabase.from("profiles").upsert(corePayload);
-      if (profileError) {
-        setErrors({ submit: `Account created but profile could not be saved: ${profileError.message}` });
-        setLoading(false);
-        return;
-      }
 
-      // Extended fields — try separately (needs SQL migration)
-      const ext: Record<string, unknown> = { id: data.user.id };
+      const ext: Record<string, unknown> = {};
       if (form.city) ext.city = form.city;
       if (form.region) ext.region = form.region;
       if (form.bio) ext.bio = form.bio;
-      if (Object.keys(ext).length > 1) {
-        await supabase.from("profiles").upsert(ext).then(() => {}, () => {});
+
+      const res = await fetch("/api/create-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: data.user.id, payload: corePayload, ext }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setErrors({ submit: `Account created but profile could not be saved: ${json.error}` });
+        setLoading(false);
+        return;
       }
+      profileModerationOn = json.profileModerationOn ?? false;
     }
 
     localStorage.removeItem(DRAFT_KEY);
