@@ -95,13 +95,12 @@ export default function AdminBlogPage() {
 
   const handleUpload = async (file: File) => {
     setUploading(true);
-    const supabase = createClient();
-    const ext = file.name.split(".").pop();
-    const path = `covers/${Date.now()}.${ext}`;
-    const { error: err } = await supabase.storage.from("blog-images").upload(path, file, { upsert: false });
-    if (err) { setError(`Upload failed: ${err.message}`); setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from("blog-images").getPublicUrl(path);
-    setForm((f) => ({ ...f, cover_image_url: urlData.publicUrl }));
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload-blog-image", { method: "POST", body: fd });
+    const json = await res.json();
+    if (!res.ok) { setError(`Upload failed: ${json.error}`); setUploading(false); return; }
+    setForm((f) => ({ ...f, cover_image_url: json.url }));
     setUploading(false);
   };
 
