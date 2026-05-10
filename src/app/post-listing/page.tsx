@@ -128,6 +128,8 @@ const initialForm: FormData = {
   contactName: "", contactPhone: "", contactEmail: "", agency: "", agreeTerms: false,
 };
 
+const DRAFT_KEY = "post_listing_draft_v1";
+
 const LISTING_TYPES: { value: ListingType; label: string; desc: string; color: string }[] = [
   { value: "For Sale", label: "For Sale", desc: "You are selling a property", color: "text-primary bg-primary/10 border-primary/30" },
   { value: "For Rent", label: "For Rent", desc: "You are renting out a property", color: "text-sky-600 bg-sky-500/10 border-sky-500/30" },
@@ -1197,6 +1199,7 @@ function SuccessScreen({ moderated }: { moderated: boolean }) {
 export default function OddajOglasPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [hasDraft, setHasDraft] = useState(false);
   const [form, setForm] = useState<FormData>(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -1206,6 +1209,26 @@ export default function OddajOglasPage() {
   const [titleChecking, setTitleChecking] = useState(false);
   const titleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [usageInfo, setUsageInfo] = useState<{ current: number; limit: number } | null>(null);
+
+  // Load draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        setForm(prev => ({ ...prev, ...JSON.parse(saved), photos: [], agreeTerms: false }));
+        setHasDraft(true);
+      }
+    } catch {}
+  }, []);
+
+  // Auto-save draft on every form change (skip photos — blob URLs don't persist)
+  useEffect(() => {
+    if (submitted) return;
+    try {
+      const { photos, agreeTerms, ...saveable } = form;
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(saveable));
+    } catch {}
+  }, [form, submitted]);
 
   useEffect(() => {
     (async () => {
@@ -1364,6 +1387,7 @@ export default function OddajOglasPage() {
     setSubmitting(false);
     setWasModerated(moderationEnabled);
     setSubmitted(true);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
   };
 
   const next = () => { if (step < 6) setStep(step + 1); else submitListing(); };
@@ -1409,6 +1433,18 @@ export default function OddajOglasPage() {
                 </div>
               );
             })()}
+
+            {hasDraft && (
+              <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-5 text-sm">
+                <span className="text-amber-700 dark:text-amber-400 font-medium">Draft restored — your previous progress was saved.</span>
+                <button
+                  onClick={() => { setForm(initialForm); setHasDraft(false); try { localStorage.removeItem(DRAFT_KEY); } catch {} }}
+                  className="text-amber-700 dark:text-amber-400 hover:text-amber-900 font-semibold text-xs underline underline-offset-2 ml-4 flex-shrink-0"
+                >
+                  Clear draft
+                </button>
+              </div>
+            )}
 
             <StepIndicator current={step} />
 

@@ -1,18 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { render } from "@react-email/render";
+import { createClient } from "@supabase/supabase-js";
 import { resend, FROM_EMAIL } from "@/lib/resend";
 import { EnquiryEmail } from "@/emails/enquiry";
 
+const adminClient = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 export async function POST(req: NextRequest) {
-  const { agentEmail, agentName, senderName, senderEmail, senderPhone, listingTitle, listingUrl, message } =
+  const { ownerUserId, agentName, senderName, senderEmail, senderPhone, listingTitle, listingUrl, message } =
     await req.json();
 
-  if (!agentEmail || !senderName || !senderEmail || !listingTitle || !message) {
+  if (!senderName || !senderEmail || !listingTitle || !message) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  // Look up owner email from their profile
+  let agentEmail = "";
+  if (ownerUserId) {
+    const { data: profile } = await adminClient
+      .from("profiles")
+      .select("email")
+      .eq("id", ownerUserId)
+      .single();
+    agentEmail = profile?.email ?? "";
+  }
+
+  if (!agentEmail) {
+    return NextResponse.json({ error: "Owner email not found" }, { status: 404 });
+  }
+
   const html = await render(
-    EnquiryEmail({ agentName, senderName, senderEmail, senderPhone, listingTitle, listingUrl, message })
+    EnquiryEmail({ agentName: agentName ?? "the owner", senderName, senderEmail, senderPhone, listingTitle, listingUrl, message })
   );
 
   const { error } = await resend.emails.send({

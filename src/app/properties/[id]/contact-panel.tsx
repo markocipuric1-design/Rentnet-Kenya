@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Phone, Check, MessageCircle, Shield } from "lucide-react";
+import { Phone, Check, MessageCircle, Shield, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/format-price";
 import { toAgentSlug } from "@/lib/utils";
@@ -70,6 +70,13 @@ type Props = {
 export function ContactPanel({ listing, owner, marketData, currentUserId, sidebarAds }: Props) {
   const [msgSent, setMsgSent] = useState(false);
   const [msgSending, setMsgSending] = useState(false);
+  const [enquiryName, setEnquiryName] = useState("");
+  const [enquiryEmail, setEnquiryEmail] = useState("");
+  const [enquiryPhone, setEnquiryPhone] = useState("");
+  const [enquiryMsg, setEnquiryMsg] = useState("");
+  const [enquirySending, setEnquirySending] = useState(false);
+  const [enquirySent, setEnquirySent] = useState(false);
+  const [enquiryError, setEnquiryError] = useState("");
 
   const ownerInitials = (owner?.full_name ?? "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
@@ -94,6 +101,31 @@ export function ContactPanel({ listing, owner, marketData, currentUserId, sideba
     }
     setMsgSending(false);
     setMsgSent(true);
+  };
+
+  const handleEnquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEnquiryError("");
+    if (!enquiryName || !enquiryEmail || !enquiryMsg) { setEnquiryError("Please fill in all required fields."); return; }
+    setEnquirySending(true);
+    const res = await fetch("/api/send-enquiry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        agentEmail: owner?.id ? undefined : undefined,
+        agentName: owner?.full_name ?? "the owner",
+        senderName: enquiryName,
+        senderEmail: enquiryEmail,
+        senderPhone: enquiryPhone || undefined,
+        listingTitle: listing.title,
+        listingUrl: `${window.location.origin}/properties/${listing.id}`,
+        message: enquiryMsg,
+        ownerUserId: owner?.id,
+      }),
+    });
+    setEnquirySending(false);
+    if (!res.ok) { setEnquiryError("Failed to send. Please try again."); return; }
+    setEnquirySent(true);
   };
 
   const waMessage = encodeURIComponent(
@@ -233,15 +265,49 @@ export function ContactPanel({ listing, owner, marketData, currentUserId, sideba
       <div className="bg-card border border-border rounded-2xl p-5">
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Send a message</p>
         {!currentUserId ? (
-          <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground mb-3">Sign in to send messages.</p>
-            <Link
-              href="/login"
-              className="bg-primary text-primary-foreground font-semibold px-4 py-2 rounded-xl text-sm hover:-translate-y-0.5 transition-all inline-block"
-            >
-              Sign In
-            </Link>
-          </div>
+          enquirySent ? (
+            <div className="text-center py-6">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Check className="h-6 w-6 text-primary" />
+              </div>
+              <p className="font-semibold text-foreground text-sm">Enquiry sent!</p>
+              <p className="text-xs text-muted-foreground mt-1">The owner will reply to your email.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleEnquiry} className="flex flex-col gap-3">
+              <input
+                type="text" placeholder="Your name *" value={enquiryName}
+                onChange={(e) => setEnquiryName(e.target.value)} required
+                className="w-full bg-muted/60 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground"
+              />
+              <input
+                type="email" placeholder="Your email *" value={enquiryEmail}
+                onChange={(e) => setEnquiryEmail(e.target.value)} required
+                className="w-full bg-muted/60 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground"
+              />
+              <input
+                type="tel" placeholder="Phone (optional)" value={enquiryPhone}
+                onChange={(e) => setEnquiryPhone(e.target.value)}
+                className="w-full bg-muted/60 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground"
+              />
+              <textarea
+                placeholder="Your message *" value={enquiryMsg} rows={3} required
+                onChange={(e) => setEnquiryMsg(e.target.value)}
+                className="w-full bg-muted/60 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground resize-none"
+                defaultValue={`I'm interested in this property: ${listing.title}. Please send me more information.`}
+              />
+              {enquiryError && <p className="text-xs text-destructive">{enquiryError}</p>}
+              <button type="submit" disabled={enquirySending}
+                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-bold py-2.5 rounded-xl text-sm transition-all shadow-md shadow-primary/20 hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                {enquirySending ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Mail className="h-4 w-4" /> Send enquiry</>}
+              </button>
+              <p className="text-center text-xs text-muted-foreground">
+                or{" "}
+                <Link href={`/login?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "")}`} className="text-primary hover:underline underline-offset-2">sign in</Link>
+                {" "}to message directly
+              </p>
+            </form>
+          )
         ) : msgSent ? (
           <div className="text-center py-6">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">

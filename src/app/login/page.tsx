@@ -22,6 +22,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [resendSent, setResendSent] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,7 @@ export default function LoginPage() {
     if (authError) {
       setError(
         authError.message.toLowerCase().includes("email not confirmed")
-          ? "Please confirm your email first. Check your inbox for the confirmation link."
+          ? "confirm_required"
           : "Incorrect email or password."
       );
       setLoading(false);
@@ -49,6 +51,14 @@ export default function LoginPage() {
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
     });
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    const supabase = createClient();
+    await supabase.auth.resend({ type: "signup", email });
+    setResending(false);
+    setResendSent(true);
   };
 
   const handleFacebook = async () => {
@@ -134,9 +144,9 @@ export default function LoginPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-sm font-semibold text-foreground">Password</label>
-                      <a href="/faq#passwords" className="text-xs text-primary hover:underline underline-offset-4">
+                      <Link href="/forgot-password" className="text-xs text-primary hover:underline underline-offset-4">
                         Forgot password?
-                      </a>
+                      </Link>
                     </div>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -169,9 +179,23 @@ export default function LoginPage() {
                   </label>
 
                   {/* Error */}
-                  {error && (
+                  {error && error !== "confirm_required" && (
                     <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm px-4 py-3 rounded-xl">
                       {error}
+                    </div>
+                  )}
+                  {error === "confirm_required" && (
+                    <div className="bg-amber-500/10 border border-amber-500/30 text-sm px-4 py-3 rounded-xl">
+                      <p className="font-semibold text-amber-700 dark:text-amber-400 mb-1">Email not confirmed</p>
+                      <p className="text-muted-foreground text-xs mb-3">Check your inbox for a confirmation link. Didn&apos;t get it?</p>
+                      {resendSent ? (
+                        <p className="text-xs font-semibold text-emerald-600">Confirmation email sent!</p>
+                      ) : (
+                        <button onClick={handleResend} disabled={resending}
+                          className="text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline underline-offset-2 disabled:opacity-60">
+                          {resending ? "Sending…" : "Resend confirmation email →"}
+                        </button>
+                      )}
                     </div>
                   )}
 
