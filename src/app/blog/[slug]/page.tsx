@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/sections/footer";
 import { createClient } from "@/lib/supabase/server";
@@ -217,17 +216,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         )}
 
         {post.content ? (
-          <div className="prose prose-neutral dark:prose-invert max-w-none
-            prose-headings:font-extrabold prose-headings:text-foreground
-            prose-p:text-muted-foreground prose-p:leading-relaxed
-            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-            prose-strong:text-foreground
-            prose-li:text-muted-foreground
-            prose-blockquote:border-primary/40 prose-blockquote:text-muted-foreground
-            prose-code:text-primary prose-code:bg-primary/8 prose-code:px-1 prose-code:rounded
-            prose-img:rounded-2xl">
-            <ReactMarkdown>{post.content}</ReactMarkdown>
-          </div>
+          <div
+            className="prose prose-neutral dark:prose-invert max-w-none
+              prose-headings:font-extrabold prose-headings:text-foreground
+              prose-p:text-muted-foreground prose-p:leading-relaxed
+              prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+              prose-strong:text-foreground
+              prose-li:text-muted-foreground
+              prose-blockquote:border-primary/40 prose-blockquote:text-muted-foreground
+              prose-code:text-primary prose-code:bg-primary/8 prose-code:px-1 prose-code:rounded
+              prose-img:rounded-2xl"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
         ) : (
           <p className="text-muted-foreground italic">No content yet.</p>
         )}

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 
 type Post = {
   id: string;
@@ -333,10 +334,13 @@ export default function AdminBlogPage() {
               {/* Content */}
               <div>
                 <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Content <span className="normal-case font-normal text-muted-foreground">(Markdown supported)</span>
+                  Content
                 </label>
-                <textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                  rows={14} className={inputCls + " resize-y font-mono text-xs"} placeholder="Write your post in Markdown..." />
+                <TiptapEditor
+                  value={form.content}
+                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                  placeholder="Write your blog post…"
+                />
               </div>
 
               {/* Toggles */}
