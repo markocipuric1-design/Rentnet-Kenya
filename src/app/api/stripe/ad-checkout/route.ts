@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe, APP_URL } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { logPayment } from "@/lib/payment-log";
 
 export const AD_PRICES: Record<string, Record<number, number>> = {
   sidebar:            { 7: 1500, 14: 2500, 30: 4000 },
@@ -119,11 +120,23 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Attach session ID to pending ads
   await supabase
     .from("advertisements")
     .update({ stripe_session_id: session.id })
     .in("id", insertedAds.map((a: { id: string }) => a.id));
+
+  const totalAmount = placements.reduce((sum, p) => sum + (AD_PRICES[p.placement]?.[p.duration_days] ?? 0), 0);
+  await logPayment({
+    provider: "stripe",
+    provider_ref: session.id,
+    status: "pending",
+    amount: totalAmount,
+    payment_type: "ad_purchase",
+    user_id: userId,
+    user_email: advertiser_email,
+    user_name: advertiser_name,
+    metadata: { stripe_session_id: session.id, placements },
+  });
 
   return NextResponse.json({ url: session.url });
   } catch (err: unknown) {

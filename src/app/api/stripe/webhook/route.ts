@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
+import { updatePaymentStatus } from "@/lib/payment-log";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -82,6 +83,12 @@ export async function POST(req: NextRequest) {
           }
           await supabase.from("profiles").update(profileUpdate).eq("id", userId);
         }
+        await updatePaymentStatus(session.id, "complete");
+      }
+
+      // ── Ad purchase complete ─────────────────────────────────────────
+      if (session.mode === "payment" && session.metadata?.type === "ad_purchase") {
+        await updatePaymentStatus(session.id, "complete");
       }
       break;
     }

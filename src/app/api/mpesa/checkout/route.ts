@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intasend, AGENCY_ANNUAL_PRICE_KES, normalisePhone } from "@/lib/intasend";
 import { createClient } from "@/lib/supabase/server";
+import { logPayment } from "@/lib/payment-log";
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,11 +44,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to initiate M-Pesa payment. Please try again." }, { status: 502 });
     }
 
-    // Store invoice ID on profile for status polling
-    await supabase
-      .from("profiles")
-      .update({ mpesa_checkout_id: invoiceId })
-      .eq("id", user.id);
+    await supabase.from("profiles").update({ mpesa_checkout_id: invoiceId }).eq("id", user.id);
+
+    await logPayment({
+      provider: "mpesa",
+      provider_ref: `agency:${user.id}`,
+      status: "pending",
+      amount: AGENCY_ANNUAL_PRICE_KES,
+      payment_type: "agency_subscription",
+      user_id: user.id,
+      user_email: profile.email ?? user.email,
+      user_name: profile.full_name,
+      metadata: { invoice_id: invoiceId },
+    });
 
     return NextResponse.json({ checkout_id: invoiceId });
   } catch (err: unknown) {

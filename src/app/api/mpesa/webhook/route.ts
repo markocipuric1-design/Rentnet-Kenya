@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { updatePaymentStatus } from "@/lib/payment-log";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
       mpesa_checkout_id: null,
     }).eq("id", userId);
 
+    await updatePaymentStatus(apiRef, "complete");
     return NextResponse.json({ received: true });
   }
 
@@ -72,5 +74,6 @@ export async function POST(req: NextRequest) {
     }).eq("id", adId);
   }
 
+  await updatePaymentStatus(apiRef, "complete");
   return NextResponse.json({ received: true });
 }

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe, AGENCY_PRICE_ID, APP_URL } from "@/lib/stripe";
+import { logPayment } from "@/lib/payment-log";
+import { AGENCY_ANNUAL_PRICE_KES } from "@/lib/intasend";
 
 export async function POST() {
   const supabase = await createClient();
@@ -43,6 +45,18 @@ export async function POST() {
     subscription_data: { metadata: { supabase_user_id: user.id, activate_agency: "true" } },
     allow_promotion_codes: true,
     billing_address_collection: "required",
+  });
+
+  await logPayment({
+    provider: "stripe",
+    provider_ref: session.id,
+    status: "pending",
+    amount: AGENCY_ANNUAL_PRICE_KES,
+    payment_type: "agency_subscription",
+    user_id: user.id,
+    user_email: profile.email ?? user.email,
+    user_name: profile.full_name,
+    metadata: { stripe_session_id: session.id },
   });
 
   return NextResponse.json({ url: session.url });

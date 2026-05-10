@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { intasend, AD_PRICES, normalisePhone } from "@/lib/intasend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { logPayment } from "@/lib/payment-log";
 import sharp from "sharp";
 
 const PLACEMENT_LABEL: Record<string, string> = {
@@ -110,11 +111,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to initiate M-Pesa payment. Please try again." }, { status: 502 });
     }
 
-    // Store invoice ID on ad records
     await supabase
       .from("advertisements")
       .update({ mpesa_checkout_id: invoiceId })
       .in("id", insertedAds.map((a: { id: string }) => a.id));
+
+    await logPayment({
+      provider: "mpesa",
+      provider_ref: adIds,
+      status: "pending",
+      amount,
+      payment_type: "ad_purchase",
+      user_id: userId,
+      user_email: advertiser_email,
+      user_name: advertiser_name,
+      metadata: { invoice_id: invoiceId, placements },
+    });
 
     return NextResponse.json({ checkout_id: invoiceId });
   } catch (err: unknown) {
