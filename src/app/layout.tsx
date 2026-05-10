@@ -6,6 +6,7 @@ import { CookieBanner } from "@/components/ui/cookie-banner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -122,6 +123,7 @@ export default function RootLayout({
           <CookieBanner />
           <SpeedInsights />
           <Analytics />
+          <Toaster position="bottom-right" richColors />
         </ThemeProvider>
       </body>
     </html>

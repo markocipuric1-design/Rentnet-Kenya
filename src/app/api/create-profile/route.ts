@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 import { createClient } from "@supabase/supabase-js";
 
 const adminClient = createClient(
@@ -7,6 +8,9 @@ const adminClient = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(`create-profile:${getIp(req)}`, 5, 60_000))
+    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+
   const { userId, payload, ext } = await req.json();
 
   if (!userId || !payload) {

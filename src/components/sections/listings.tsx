@@ -7,6 +7,7 @@ import Image from "next/image";
 import { MapPin, Bed, Square, Heart, ChevronLeft, ChevronRight, ArrowRight, Home } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/format-price";
+import { toast } from "sonner";
 
 type Listing = {
   id: string;
@@ -58,7 +59,15 @@ function ListingCard({ listing, compact = false }: { listing: Listing; compact?:
           </span>
         </div>
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFaved(!faved); }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const next = !faved;
+            setFaved(next);
+            toast(next ? "Saved to favourites" : "Removed from favourites", {
+              icon: next ? "❤️" : "🗑️",
+            });
+          }}
           className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow hover:scale-110 transition-transform"
         >
           <Heart className={`h-3.5 w-3.5 transition-colors ${faved ? "fill-rose-500 text-rose-500" : "text-gray-400"}`} />

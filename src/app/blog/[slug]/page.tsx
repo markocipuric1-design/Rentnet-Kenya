@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import DOMPurify from "isomorphic-dompurify";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/sections/footer";
 import { createClient } from "@/lib/supabase/server";
@@ -226,7 +227,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               prose-blockquote:border-primary/40 prose-blockquote:text-muted-foreground
               prose-code:text-primary prose-code:bg-primary/8 prose-code:px-1 prose-code:rounded
               prose-img:rounded-2xl"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
           />
         ) : (
           <p className="text-muted-foreground italic">No content yet.</p>

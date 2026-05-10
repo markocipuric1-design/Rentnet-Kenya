@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { render } from "@react-email/render";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 import { createClient } from "@supabase/supabase-js";
 import { resend, FROM_EMAIL } from "@/lib/resend";
 import { EnquiryEmail } from "@/emails/enquiry";
@@ -10,6 +11,9 @@ const adminClient = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(`enquiry:${getIp(req)}`, 5, 60_000))
+    return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
+
   const { ownerUserId, agentName, senderName, senderEmail, senderPhone, listingTitle, listingUrl, message } =
     await req.json();
 
