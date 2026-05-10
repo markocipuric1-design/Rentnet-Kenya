@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { CookieBanner } from "@/components/ui/cookie-banner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -68,6 +69,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-FS1KPGG40M" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-FS1KPGG40M');
+        `}</Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
