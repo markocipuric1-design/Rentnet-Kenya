@@ -133,6 +133,11 @@ export default function ConversationPage() {
     const supabase = createClient();
     await supabase.from("messages").insert({ conversation_id: convId, sender_id: userId, body });
     await supabase.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", convId);
+    fetch("/api/push/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversation_id: convId, body }),
+    }).catch(() => {});
     setSending(false);
     inputRef.current?.focus();
   };

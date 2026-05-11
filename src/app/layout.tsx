@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { Toaster } from "sonner";
+import { SwRegister } from "@/components/ui/sw-register";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -70,6 +71,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <SwRegister />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-FS1KPGG40M" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];

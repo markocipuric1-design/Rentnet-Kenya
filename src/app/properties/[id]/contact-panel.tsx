@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Phone, Check, MessageCircle, Shield, Mail } from "lucide-react";
+import { Phone, Check, MessageCircle, Shield, Mail, Calculator, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/format-price";
 import { toAgentSlug } from "@/lib/utils";
@@ -66,6 +66,75 @@ type Props = {
   currentUserId: string | null;
   sidebarAds: Ad[];
 };
+
+function MortgageWidget({ price }: { price: number }) {
+  const [open, setOpen] = useState(false);
+  const [downPct, setDownPct] = useState(20);
+  const [rate, setRate] = useState(13);
+  const [years, setYears] = useState(20);
+
+  const monthly = useMemo(() => {
+    const P = price * (1 - downPct / 100);
+    const r = rate / 100 / 12;
+    const n = years * 12;
+    if (!P || !r || !n) return null;
+    return (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  }, [price, downPct, rate, years]);
+
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-accent transition-colors"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Calculator className="h-4 w-4 text-primary" /> Mortgage estimate
+        </span>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-5 flex flex-col gap-4 border-t border-border pt-4">
+          {monthly && (
+            <div className="bg-primary/5 rounded-xl p-3 text-center">
+              <p className="text-xs text-muted-foreground">Est. monthly payment</p>
+              <p className="text-2xl font-extrabold text-primary">KES {Math.round(monthly).toLocaleString("en-KE")}</p>
+            </div>
+          )}
+          <div>
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>Down payment</span><span className="font-semibold text-foreground">{downPct}%</span>
+            </div>
+            <input type="range" min={5} max={80} step={5} value={downPct}
+              onChange={e => setDownPct(Number(e.target.value))} className="w-full accent-primary" />
+          </div>
+          <div>
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>Interest rate</span><span className="font-semibold text-foreground">{rate}%</span>
+            </div>
+            <input type="range" min={8} max={25} step={0.5} value={rate}
+              onChange={e => setRate(Number(e.target.value))} className="w-full accent-primary" />
+          </div>
+          <div>
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>Loan term</span><span className="font-semibold text-foreground">{years} years</span>
+            </div>
+            <div className="flex gap-1.5">
+              {[10, 15, 20, 25, 30].map(y => (
+                <button key={y} onClick={() => setYears(y)}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all border ${years === y ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>
+                  {y}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Link href="/tools/mortgage-calculator" className="text-xs text-primary hover:underline text-center">
+            Full calculator →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ContactPanel({ listing, owner, marketData, currentUserId, sidebarAds }: Props) {
   const [msgSent, setMsgSent] = useState(false);
@@ -343,6 +412,11 @@ export function ContactPanel({ listing, owner, marketData, currentUserId, sideba
           </form>
         )}
       </div>
+
+      {/* ── Mortgage mini-calculator ── */}
+      {listing.type === "For Sale" && (
+        <MortgageWidget price={listing.price} />
+      )}
 
       {/* ── Sidebar ad ── */}
       {ad ? (

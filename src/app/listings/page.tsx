@@ -130,12 +130,14 @@ function AdminEditModal({ listing, onClose, onSave }: {
 
 // ─── Property Card ────────────────────────────────────────────────────────────
 
-function PropertyCard({ listing, view, isAdmin, onEdit, onDelete }: {
+function PropertyCard({ listing, view, isAdmin, onEdit, onDelete, inCompare, onToggleCompare }: {
   listing: Listing;
   view: "grid" | "list";
   isAdmin?: boolean;
   onEdit?: (l: Listing) => void;
   onDelete?: (id: string) => void;
+  inCompare?: boolean;
+  onToggleCompare?: (id: string) => void;
 }) {
   const [faved, setFaved] = useState(false);
 
@@ -221,6 +223,14 @@ function PropertyCard({ listing, view, isAdmin, onEdit, onDelete }: {
               <span className="font-bold text-sm text-foreground">{formatPrice(listing.price, listing.type)}</span>
             </div>
           </div>
+          {onToggleCompare && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleCompare(listing.id); }}
+              className={`mt-2 w-full text-xs font-semibold py-1.5 rounded-lg border transition-all ${inCompare ? "bg-primary/10 border-primary/40 text-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"}`}
+            >
+              {inCompare ? "✓ Added to compare" : "+ Compare"}
+            </button>
+          )}
         </div>
       </Link>
     </div>
@@ -643,6 +653,36 @@ function InfeedAdPlaceholderCompact() {
   );
 }
 
+// ─── Save Search Button ───────────────────────────────────────────────────────
+
+function SaveSearchButton({ filters }: { filters: Filters }) {
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.location.href = "/login?redirect=/listings"; return; }
+    const name = [
+      filters.type !== "All" ? filters.type : null,
+      filters.category !== "All" ? filters.category : null,
+      filters.city !== "All" ? `in ${filters.city}` : null,
+    ].filter(Boolean).join(" ") || "My search";
+    await supabase.from("saved_searches").insert({ user_id: user.id, name, filters });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <button onClick={handleSave} disabled={saving || saved}
+      className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${saved ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600" : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary"}`}>
+      {saved ? "✓ Saved!" : saving ? "Saving…" : "🔔 Save search"}
+    </button>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function SearchPage() {
@@ -669,6 +709,14 @@ function SearchPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [editListing, setEditListing] = useState<Listing | null>(null);
   const [infeedAds, setInfeedAds] = useState<{ id: string; title: string; image_url: string; link_url: string }[]>([]);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const toggleCompare = (id: string) => {
+    setCompareIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 3 ? [...prev, id] : prev
+    );
+  };
 
   useEffect(() => {
     (async () => {
@@ -707,6 +755,7 @@ function SearchPage() {
       }
 
       if (user) {
+        setCurrentUserId(user.id);
         const { data: profile } = await supabase
           .from("profiles").select("account_type").eq("id", user.id).single();
         setIsAdmin(profile?.account_type === "administrator");
@@ -845,7 +894,7 @@ function SearchPage() {
         </div>
 
         {activeChips.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-5">
+          <div className="flex flex-wrap gap-2 mb-5 items-center">
             {activeChips.map((chip) => (
               <span key={chip.label} className="flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 rounded-full">
                 {chip.label}
@@ -853,6 +902,7 @@ function SearchPage() {
               </span>
             ))}
             <button onClick={resetFilters} className="text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">Clear all</button>
+            <SaveSearchButton filters={filters} />
           </div>
         )}
 
@@ -911,7 +961,9 @@ function SearchPage() {
                   {(() => {
                     const cards = paginated.map((l) => (
                       <PropertyCard key={l.id} listing={l} view={view as "grid" | "list"} isAdmin={isAdmin}
-                        onEdit={setEditListing} onDelete={handleDelete} />
+                        onEdit={setEditListing} onDelete={handleDelete}
+                        inCompare={compareIds.includes(l.id)}
+                        onToggleCompare={view === "grid" ? toggleCompare : undefined} />
                     ));
                     if (view !== "grid") return cards;
 
@@ -999,6 +1051,43 @@ function SearchPage() {
 
       {editListing && (
         <AdminEditModal listing={editListing} onClose={() => setEditListing(null)} onSave={handleSaveEdit} />
+      )}
+
+      {/* ── Comparison sticky bar ── */}
+      {compareIds.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-2xl px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-xs font-bold text-muted-foreground flex-shrink-0">Compare:</span>
+            <div className="flex gap-2 overflow-x-auto">
+              {compareIds.map(id => {
+                const l = allListings.find(x => x.id === id);
+                if (!l) return null;
+                return (
+                  <div key={id} className="flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0">
+                    {l.title.length > 20 ? l.title.slice(0, 20) + "…" : l.title}
+                    <button onClick={() => toggleCompare(id)} className="ml-0.5 hover:text-primary/60 transition-colors">×</button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {compareIds.length < 2 && (
+              <p className="text-xs text-muted-foreground hidden sm:block">Select {2 - compareIds.length} more</p>
+            )}
+            <button onClick={() => setCompareIds([])} className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5">
+              Clear
+            </button>
+            {compareIds.length >= 2 && (
+              <a
+                href={`/compare?ids=${compareIds.join(",")}`}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 shadow-md shadow-primary/20"
+              >
+                Compare {compareIds.length} →
+              </a>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
