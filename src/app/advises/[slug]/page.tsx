@@ -66,7 +66,7 @@ export default async function AdvisePage({ params }: { params: Promise<{ slug: s
 
         {/* Back */}
         <Link href="/advises" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
-          <ArrowLeft className="h-4 w-4" /> Back to RentNet Advises
+          <ArrowLeft className="h-4 w-4" /> Back to Rentnet Advises
         </Link>
 
         {/* Header */}
@@ -115,7 +115,7 @@ export default async function AdvisePage({ params }: { params: Promise<{ slug: s
           <div className="mt-14">
             <div className="flex items-center gap-2 mb-6">
               <BookOpen className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold text-foreground">More from RentNet Advises</h2>
+              <h2 className="text-lg font-bold text-foreground">More from Rentnet Advises</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {others.map((a) => (

@@ -37,7 +37,7 @@ const craftsmenHref = (item: string) =>
 
 const secondaryNavItems = [
   {
-    label: "RentNet Services",
+    label: "Rentnet Services",
     key: "services",
     items: [
       { label: "Legal consultation", href: "/services/legal" },
@@ -49,7 +49,7 @@ const secondaryNavItems = [
     ],
   },
   {
-    label: "RentNet Advises",
+    label: "Rentnet Advises",
     key: "advises",
     items: [
       { label: "Tips for safely renting out your property", href: "/advises/safe-renting" },
@@ -438,7 +438,7 @@ export function Navbar() {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-0.5">Advertise on RentNet</p>
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-0.5">Advertise on Rentnet</p>
                       <p className="text-sm font-bold text-foreground">Reach Kenyan property seekers</p>
                     </div>
                     <Link

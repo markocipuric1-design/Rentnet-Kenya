@@ -64,7 +64,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-12">
 
         <Link href="/services" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
-          <ArrowLeft className="h-4 w-4" /> Back to RentNet Services
+          <ArrowLeft className="h-4 w-4" /> Back to Rentnet Services
         </Link>
 
         {/* Header */}
@@ -72,7 +72,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,oklch(0.52_0.27_293/0.06)_1px,transparent_1px)] bg-[length:20px_20px]" />
           <div className="relative">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-              <Zap className="h-3.5 w-3.5" /> RentNet Services
+              <Zap className="h-3.5 w-3.5" /> Rentnet Services
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-2">{item.title}</h1>
             <p className="text-primary font-semibold mb-3">{item.tagline}</p>

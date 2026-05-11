@@ -364,7 +364,7 @@ export const servicesData: ServiceItem[] = [
     slug: "help",
     title: "We Help You Buy, Sell, Rent or Lease",
     tagline: "End-to-end support through every step of your property journey.",
-    excerpt: "From first enquiry to signed agreement — RentNet guides you through the entire process.",
+    excerpt: "From first enquiry to signed agreement — Rentnet guides you through the entire process.",
     sections: [
       {
         heading: "Buying a Property",
@@ -372,7 +372,7 @@ export const servicesData: ServiceItem[] = [
       },
       {
         heading: "Selling a Property",
-        body: "Our selling service includes professional photography, listing on RentNet and partner platforms, screening of prospective buyers, negotiation support, and coordination with your lawyer for the sale agreement and title transfer. We work to get your property sold at the right price, not just quickly.",
+        body: "Our selling service includes professional photography, listing on Rentnet and partner platforms, screening of prospective buyers, negotiation support, and coordination with your lawyer for the sale agreement and title transfer. We work to get your property sold at the right price, not just quickly.",
       },
       {
         heading: "Renting and Leasing",
@@ -634,7 +634,7 @@ export const documentsData: DocumentItem[] = [
     sections: [
       {
         heading: "Why Good Photos Matter",
-        body: "On RentNet and other platforms, listings with professional-quality photographs receive up to three times more enquiries than those with dark, cluttered, or low-resolution images. You do not need a professional photographer — a modern smartphone and these guidelines are enough.",
+        body: "On Rentnet and other platforms, listings with professional-quality photographs receive up to three times more enquiries than those with dark, cluttered, or low-resolution images. You do not need a professional photographer — a modern smartphone and these guidelines are enough.",
       },
       {
         heading: "Preparation Before Shooting",
@@ -1076,7 +1076,7 @@ export const partnerCategoriesData: PartnerCategory[] = [
     slug: "agencies",
     title: "Real Estate Agencies",
     description: "Licensed agencies helping buyers, sellers, landlords and tenants across Kenya.",
-    longDescription: "Real estate agencies listed on RentNet are licensed professionals who facilitate property transactions across Kenya. Whether you are looking for a buying agent, a letting manager, or a full property consultancy, this directory connects you with verified agencies in your area.",
+    longDescription: "Real estate agencies listed on Rentnet are licensed professionals who facilitate property transactions across Kenya. Whether you are looking for a buying agent, a letting manager, or a full property consultancy, this directory connects you with verified agencies in your area.",
     subcategories: [],
   },
   {

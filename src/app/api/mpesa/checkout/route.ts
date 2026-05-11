@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       phone_number,
       email: profile.email ?? user.email,
       amount: AGENCY_ANNUAL_PRICE_KES,
-      narrative: "RentNet Agency Annual Plan",
+      narrative: "Rentnet Agency Annual Plan",
       api_ref: `agency:${user.id}`,
     });
 
