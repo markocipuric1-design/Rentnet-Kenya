@@ -12,6 +12,13 @@ const PLACEMENT_LABEL: Record<string, string> = {
   homepage:           "Homepage Banner Ad",
 };
 
+const PLACEMENT_SHORT: Record<string, string> = {
+  sidebar:            "Sidebar",
+  infeed:             "In-feed",
+  "featured-partner": "Partner",
+  homepage:           "Homepage",
+};
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -94,8 +101,9 @@ export async function POST(req: NextRequest) {
     const amount = placements.reduce((sum, p) => sum + (AD_PRICES[p.placement]?.[p.duration_days] ?? 0), 0);
 
     const narrative = placements
-      .map((p) => `${PLACEMENT_LABEL[p.placement] ?? p.placement} ${p.duration_days}d`)
-      .join(", ");
+      .map((p) => `${PLACEMENT_SHORT[p.placement] ?? p.placement} ${p.duration_days}d`)
+      .join(", ")
+      .slice(0, 72);
 
     // Initiate STK Push
     const response = await intasend.collection().mpesaStkPush({
