@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import DOMPurify from "isomorphic-dompurify";
+import { SafeHtml } from "@/components/ui/safe-html";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/sections/footer";
 import { createClient } from "@/lib/supabase/server";
@@ -217,7 +217,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         )}
 
         {post.content ? (
-          <div
+          <SafeHtml
+            html={post.content}
             className="prose prose-neutral dark:prose-invert max-w-none
               prose-headings:font-extrabold prose-headings:text-foreground
               prose-p:text-muted-foreground prose-p:leading-relaxed
@@ -227,7 +228,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               prose-blockquote:border-primary/40 prose-blockquote:text-muted-foreground
               prose-code:text-primary prose-code:bg-primary/8 prose-code:px-1 prose-code:rounded
               prose-img:rounded-2xl"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
           />
         ) : (
           <p className="text-muted-foreground italic">No content yet.</p>
