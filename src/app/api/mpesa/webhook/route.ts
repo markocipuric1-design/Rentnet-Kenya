@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
 
   const state = event.state as string;
   const apiRef = event.api_ref as string | undefined;
+  // IntaSend sends the invoice ID at the top level
+  const invoiceId = (event.invoice_id ?? event.id) as string | undefined;
 
   if (state !== "COMPLETE" || !apiRef) {
     return NextResponse.json({ received: true });
@@ -49,26 +51,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
-  // Ad purchase: api_ref = comma-separated ad UUIDs
-  const adIds = apiRef.split(",").filter(Boolean);
-  for (const adId of adIds) {
-    const { data: ad } = await supabase
+  // Ad purchase: look up ads by mpesa_checkout_id (invoice ID from webhook payload)
+  if (invoiceId) {
+    const { data: ads } = await supabase
       .from("advertisements")
-      .select("duration_days")
-      .eq("id", adId)
-      .single();
+      .select("id, duration_days")
+      .eq("mpesa_checkout_id", invoiceId);
 
-    const durationDays = ad?.duration_days ?? 30;
-    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
-
-    await supabase.from("advertisements").update({
-      active: true,
-      payment_status: "paid",
-      expires_at: expiresAt,
-      mpesa_checkout_id: null,
-    }).eq("id", adId);
+    if (ads?.length) {
+      for (const ad of ads) {
+        const expiresAt = new Date(Date.now() + (ad.duration_days ?? 30) * 24 * 60 * 60 * 1000).toISOString();
+        await supabase.from("advertisements").update({
+          active: true,
+          payment_status: "paid",
+          expires_at: expiresAt,
+          mpesa_checkout_id: null,
+        }).eq("id", ad.id);
+      }
+      await updatePaymentStatus(invoiceId, "complete");
+    }
   }
 
-  await updatePaymentStatus(apiRef, "complete");
   return NextResponse.json({ received: true });
 }

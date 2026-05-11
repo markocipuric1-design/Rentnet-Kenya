@@ -105,13 +105,13 @@ export async function POST(req: NextRequest) {
       .join(", ")
       .slice(0, 72);
 
-    // Initiate STK Push
+    // Initiate STK Push — api_ref kept short to stay within IntaSend's limit
     const response = await intasend.collection().mpesaStkPush({
       phone_number,
       email: advertiser_email,
       amount,
       narrative,
-      api_ref: adIds,
+      api_ref: `ad:${Date.now()}`,
     });
 
     const invoiceId: string = response?.invoice?.invoice_id ?? response?.id;
