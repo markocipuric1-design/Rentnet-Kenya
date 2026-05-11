@@ -1,9 +1,11 @@
 import IntaSend from "intasend-node";
 
+const isTest = process.env.INTASEND_TEST_MODE === "true";
+
 export const intasend = new IntaSend(
   process.env.INTASEND_PUBLISHABLE_KEY!,
   process.env.INTASEND_SECRET_KEY!,
-  process.env.NODE_ENV !== "production",
+  isTest,
 );
 
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
