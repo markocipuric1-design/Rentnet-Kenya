@@ -1,33 +1,37 @@
 import { ImageResponse } from "next/og";
-import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "edge";
 export const alt = "Property listing on Rentnet Kenya";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+async function fetchListing(id: string) {
+  const headers = {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    "Content-Type": "application/json",
+  };
+  const fields = "title,price,city,type,area,rooms,bedrooms";
+
+  const bySlug = await fetch(
+    `${SUPABASE_URL}/rest/v1/listings?slug=eq.${encodeURIComponent(id)}&select=${fields}&limit=1`,
+    { headers }
+  ).then(r => r.json());
+  if (bySlug?.[0]) return bySlug[0];
+
+  const byId = await fetch(
+    `${SUPABASE_URL}/rest/v1/listings?id=eq.${encodeURIComponent(id)}&select=${fields}&limit=1`,
+    { headers }
+  ).then(r => r.json());
+  return byId?.[0] ?? null;
+}
+
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
-
-  let listing = null;
-
-  const { data: bySlug } = await supabase
-    .from("listings")
-    .select("title, price, city, type, area, rooms, bedrooms")
-    .eq("slug", id)
-    .maybeSingle();
-
-  listing = bySlug;
-
-  if (!listing) {
-    const { data: byId } = await supabase
-      .from("listings")
-      .select("title, price, city, type, area, rooms, bedrooms")
-      .eq("id", id)
-      .maybeSingle();
-    listing = byId;
-  }
+  const listing = await fetchListing(id);
 
   const title = listing?.title ?? "Property listing";
   const priceStr = listing?.price

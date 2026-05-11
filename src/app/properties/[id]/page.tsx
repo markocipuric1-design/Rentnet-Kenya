@@ -125,6 +125,8 @@ export async function generateMetadata(
 
   const canonical = `https://rentnet.co.ke/properties/${l.slug ?? id}`;
 
+  const ogImage = `https://rentnet.co.ke/properties/${l.slug ?? id}/opengraph-image`;
+
   return {
     title,
     description,
@@ -134,11 +136,13 @@ export async function generateMetadata(
       description,
       url: canonical,
       type: "website",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [ogImage],
     },
   };
 }
