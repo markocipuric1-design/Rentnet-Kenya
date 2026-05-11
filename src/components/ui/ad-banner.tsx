@@ -36,11 +36,6 @@ export function AdBanner({
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.52_0.27_293/0.035)_1px,transparent_1px)] bg-[length:20px_20px]" />
           </div>
 
-          {/* Ad label */}
-          <span className="absolute top-3 right-3 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-widest border border-border px-2 py-0.5 rounded-md">
-            {label}
-          </span>
-
           {/* Logo / icon slot */}
           {logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -66,16 +61,21 @@ export function AdBanner({
             </p>
           </div>
 
-          {/* Badge + CTA */}
-          <div className="relative flex items-center gap-3 flex-shrink-0">
-            {badge && (
-              <span className="hidden md:block text-xs font-semibold bg-accent text-primary px-3 py-1.5 rounded-full">
-                {badge}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground font-semibold text-sm px-5 py-2.5 rounded-xl group-hover:bg-primary/90 transition-colors shadow-md shadow-primary/20">
-              {cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+          {/* AD label + Badge + CTA — stacked so label never overlaps button */}
+          <div className="relative flex flex-col items-end gap-2 flex-shrink-0">
+            <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-widest border border-border px-2 py-0.5 rounded-md">
+              {label}
             </span>
+            <div className="flex items-center gap-3">
+              {badge && (
+                <span className="hidden md:block text-xs font-semibold bg-accent text-primary px-3 py-1.5 rounded-full">
+                  {badge}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground font-semibold text-sm px-5 py-2.5 rounded-xl group-hover:bg-primary/90 transition-colors shadow-md shadow-primary/20">
+                {cta} <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+              </span>
+            </div>
           </div>
         </a>
       </div>

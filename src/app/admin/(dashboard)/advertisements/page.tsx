@@ -12,6 +12,8 @@ import { partnerCategoriesData } from "@/lib/content-data";
 type Ad = {
   id: string;
   title: string;
+  description: string | null;
+  cta_text: string | null;
   image_url: string;
   link_url: string;
   placement: "sidebar" | "infeed" | "featured-partner" | "homepage";
@@ -58,6 +60,8 @@ function AdModal({ ad, onClose, onSave }: {
 }) {
   const [form, setForm] = useState({
     title: ad?.title ?? "",
+    description: ad?.description ?? "",
+    cta_text: ad?.cta_text ?? "",
     link_url: ad?.link_url ?? "",
     placement: ad?.placement ?? "sidebar",
     category: ad?.category ?? "",
@@ -84,6 +88,8 @@ function AdModal({ ad, onClose, onSave }: {
     setSaving(true);
     await onSave({
       title: form.title,
+      description: form.description || null,
+      cta_text: form.cta_text || null,
       link_url: form.link_url,
       placement: form.placement as Ad["placement"],
       category: form.placement === "featured-partner" && form.category ? form.category : null,
@@ -129,6 +135,16 @@ function AdModal({ ad, onClose, onSave }: {
           <div>
             <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Title *</label>
             <input required value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. KCB Mortgage Offer" className={inputClass} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Description <span className="normal-case font-normal text-muted-foreground">(homepage banner only)</span></label>
+            <input value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Short tagline shown below the title" className={inputClass} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">CTA button text <span className="normal-case font-normal text-muted-foreground">(leave empty for "Learn more")</span></label>
+            <input value={form.cta_text} onChange={(e) => set("cta_text", e.target.value)} placeholder='e.g. "Get a quote" or "Shop now"' className={inputClass} />
           </div>
 
           <div>
@@ -193,7 +209,7 @@ export default function AdminAdvertisementsPage() {
     const supabase = createClient();
     const { data } = await supabase
       .from("advertisements")
-      .select("id, title, image_url, link_url, placement, category, priority, active, created_at, expires_at, payment_status, duration_days, advertiser_name, advertiser_email")
+      .select("id, title, description, cta_text, image_url, link_url, placement, category, priority, active, created_at, expires_at, payment_status, duration_days, advertiser_name, advertiser_email")
       .order("created_at", { ascending: false });
     setAds(data ?? []);
     setLoading(false);

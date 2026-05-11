@@ -23,7 +23,7 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: homepageAds } = await supabase
     .from("advertisements")
-    .select("id, title, image_url, link_url")
+    .select("id, title, description, cta_text, image_url, link_url")
     .eq("placement", "homepage")
     .eq("active", true)
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
@@ -42,7 +42,8 @@ export default async function Home() {
         <AdBanner
           eyebrow="Sponsored"
           title={ad1.title}
-          cta="Learn more"
+          description={ad1.description ?? undefined}
+          cta={ad1.cta_text || "Learn more"}
           href={ad1.link_url}
           logoImage={ad1.image_url}
         />
@@ -68,7 +69,8 @@ export default async function Home() {
         <AdBanner
           eyebrow="Sponsored"
           title={ad2.title}
-          cta="Learn more"
+          description={ad2.description ?? undefined}
+          cta={ad2.cta_text || "Learn more"}
           href={ad2.link_url}
           logoImage={ad2.image_url}
         />
