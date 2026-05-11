@@ -26,7 +26,7 @@ const links = {
     { label: "Contact", href: "#" },
   ],
   Resources: [
-    { label: "Mortgage Calculator", href: "#" },
+    { label: "Mortgage Calculator", href: "/tools/mortgage-calculator" },
     { label: "Legal Advice", href: "/services/legal" },
     { label: "FAQ", href: "/faq" },
     { label: "Terms of Use", href: "/terms" },
