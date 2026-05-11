@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, Home, Building2, LogOut, Shield, Menu, X, ArrowLeft, Wrench, Megaphone, BookOpen, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, Home, Building2, LogOut, Shield, Menu, X, ArrowLeft, Wrench, Megaphone, BookOpen, CreditCard, FlaskConical } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone },
   { href: "/admin/blog", label: "Blog", icon: BookOpen },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
+  { href: "/admin/test-payment", label: "Test Payment", icon: FlaskConical },
 ];
 
 export function AdminSidebar({ userName, userEmail }: { userName: string; userEmail?: string }) {
