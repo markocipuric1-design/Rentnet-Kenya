@@ -73,18 +73,16 @@ CREATE POLICY "Recipients can mark as read"
   )
   WITH CHECK (true);
 
--- Enable realtime for messages
-ALTER PUBLICATION supabase_realtime ADD TABLE messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE conversations;
-
 -- ── Push subscriptions ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   subscription jsonb NOT NULL,
-  created_at   timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (user_id, (subscription->>'endpoint'))
+  created_at   timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS push_subscriptions_user_endpoint_idx
+  ON push_subscriptions (user_id, (subscription->>'endpoint'));
 
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own push subscriptions"

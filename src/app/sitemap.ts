@@ -62,6 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/cookie-policy`,     lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
     { url: `${base}/data-deletion`,     lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
     { url: `${base}/about`,             lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/tools/mortgage-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
 
     // ── Blog categories ───────────────────────────────────────────────────────
     ...BLOG_CATEGORY_SLUGS.map((slug) => ({
