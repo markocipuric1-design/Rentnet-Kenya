@@ -35,11 +35,6 @@ export function AdBanner({
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.52_0.27_293/0.035)_1px,transparent_1px)] bg-[length:20px_20px]" />
           </div>
 
-          {/* AD watermark — top-right, very subtle, like Google/LinkedIn */}
-          <span className="absolute top-2.5 right-3 text-[10px] font-medium text-muted-foreground/35 tracking-wide select-none">
-            {label}
-          </span>
-
           {/* Logo / icon slot */}
           {logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -53,9 +48,14 @@ export function AdBanner({
           {/* Text */}
           <div className="relative flex-1 text-center sm:text-left">
             {eyebrow && (
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">
-                {eyebrow}
-              </span>
+              <div className="flex items-center gap-2 mb-1 justify-center sm:justify-start">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                  {eyebrow}
+                </span>
+                <span className="text-[9px] font-semibold text-muted-foreground/50 border border-border px-1.5 py-px rounded uppercase tracking-wide">
+                  {label}
+                </span>
+              </div>
             )}
             <h3 className="font-bold text-foreground text-base leading-snug group-hover:text-primary transition-colors duration-300">
               {title}
