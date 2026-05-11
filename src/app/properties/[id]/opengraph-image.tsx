@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
-export const runtime = "edge";
 export const alt = "Property listing on Rentnet Kenya";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -11,7 +10,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
   let listing = null;
