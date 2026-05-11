@@ -1,30 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { updatePaymentStatus } from "@/lib/payment-log";
-import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
-
-  // Verify IntaSend webhook signature
-  const signature = req.headers.get("x-intasend-signature");
-  const secret = process.env.INTASEND_SECRET_KEY;
-
-  if (secret && signature) {
-    const expected = crypto
-      .createHmac("sha256", secret)
-      .update(body)
-      .digest("hex");
-    if (expected !== signature) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-    }
-  }
 
   let event: Record<string, unknown>;
   try {
     event = JSON.parse(body);
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  // Verify IntaSend challenge secret
+  const webhookSecret = process.env.INTASEND_WEBHOOK_SECRET;
+  if (webhookSecret && event.challenge !== webhookSecret) {
+    return NextResponse.json({ error: "Invalid challenge" }, { status: 400 });
   }
 
   const state = event.state as string;
