@@ -96,20 +96,28 @@ export async function generateMetadata(
 
   let { data: l } = await supabase
     .from("listings")
-    .select("title, description, price, area, rooms, bedrooms, city, type, category, slug")
+    .select("id, title, description, price, area, rooms, bedrooms, city, type, category, slug")
     .eq("slug", id)
     .maybeSingle();
 
   if (!l) {
     const { data } = await supabase
       .from("listings")
-      .select("title, description, price, area, rooms, bedrooms, city, type, category, slug")
+      .select("id, title, description, price, area, rooms, bedrooms, city, type, category, slug")
       .eq("id", id)
       .maybeSingle();
     l = data;
   }
 
   if (!l) return { title: "Listing not found" };
+
+  const { data: firstPhoto } = await supabase
+    .from("listing_photos")
+    .select("url")
+    .eq("listing_id", l.id)
+    .order("position")
+    .limit(1)
+    .maybeSingle();
 
   const priceStr = `KES ${Number(l.price).toLocaleString("en-KE")}`;
   const details = [
@@ -124,8 +132,7 @@ export async function generateMetadata(
     : `${l.type} in ${l.city}${l.category ? ` · ${l.category}` : ""}. ${priceStr}. ${details}. Find this and more listings on Rentnet Kenya.`;
 
   const canonical = `https://rentnet.co.ke/properties/${l.slug ?? id}`;
-
-  const ogImage = `https://rentnet.co.ke/properties/${l.slug ?? id}/opengraph-image`;
+  const ogImage = firstPhoto?.url ?? "https://rentnet.co.ke/opengraph-image";
 
   return {
     title,
