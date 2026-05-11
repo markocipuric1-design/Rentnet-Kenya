@@ -23,12 +23,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  const ALLOWED_PAYLOAD_FIELDS = new Set([
+    "full_name", "phone", "avatar_url", "cover_url", "bio", "location", "youtube_url",
+  ]);
+  const ALLOWED_EXT_FIELDS = new Set([
+    "account_type", "agency_name", "agency_license", "agency_address",
+  ]);
+  const SAFE_ACCOUNT_TYPES = new Set(["fisicna", "agencija"]);
+
+  function pickFields(obj: Record<string, unknown>, allowed: Set<string>) {
+    return Object.fromEntries(Object.entries(obj).filter(([k]) => allowed.has(k)));
+  }
+
+  const safePayload = pickFields(payload as Record<string, unknown>, ALLOWED_PAYLOAD_FIELDS);
+
   const { data: settingsRows } = await adminClient.from("site_settings").select("key, value");
   const settings = Object.fromEntries((settingsRows ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
   const profileModerationOn = settings["profile_moderation_enabled"] === "true";
 
   const { error: profileError } = await adminClient.from("profiles").upsert({
-    ...payload,
+    ...safePayload,
     id: userId,
     profile_status: profileModerationOn ? "pending" : "active",
   });
@@ -38,7 +52,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (ext && Object.keys(ext).length > 0) {
-    await adminClient.from("profiles").upsert({ ...ext, id: userId }).then(() => {}, () => {});
+    const safeExt = pickFields(ext as Record<string, unknown>, ALLOWED_EXT_FIELDS);
+    if (safeExt.account_type && !SAFE_ACCOUNT_TYPES.has(safeExt.account_type as string)) {
+      delete safeExt.account_type;
+    }
+    if (Object.keys(safeExt).length > 0) {
+      await adminClient.from("profiles").upsert({ ...safeExt, id: userId }).then(() => {}, () => {});
+    }
   }
 
   return NextResponse.json({ success: true, profileModerationOn });

@@ -14,7 +14,11 @@ export async function POST(req: NextRequest) {
 
   // Verify IntaSend challenge secret
   const webhookSecret = process.env.INTASEND_WEBHOOK_SECRET;
-  if (webhookSecret && event.challenge !== webhookSecret) {
+  if (!webhookSecret) {
+    console.error("[mpesa/webhook] INTASEND_WEBHOOK_SECRET is not set");
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+  }
+  if (event.challenge !== webhookSecret) {
     return NextResponse.json({ error: "Invalid challenge" }, { status: 400 });
   }
 

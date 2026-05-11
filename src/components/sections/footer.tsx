@@ -98,6 +98,9 @@ export function Footer() {
               {l.label}
             </Link>
           ))}
+          <Link href="/test-payment" className="hover:text-primary/60 transition-colors text-white/20">
+            Test Pay
+          </Link>
           <Link href="/admin/register" className="hover:text-primary/60 transition-colors text-white/20">
             Admin
           </Link>

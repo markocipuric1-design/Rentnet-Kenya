@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intasend } from "@/lib/intasend";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,6 +12,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
+  const supabaseAdmin = createAdminClient();
+
+  // Agency upgrades are high-value — require auth + ownership
+  if (type === "agency") {
+    const supabaseAuth = await createClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("mpesa_checkout_id")
+      .eq("id", user.id)
+      .single();
+    if (profile?.mpesa_checkout_id !== invoiceId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+  // Ad purchases support guest checkout — invoice ID (UUID) is unguessable
+
   try {
     const result = await intasend.collection().status(invoiceId);
     console.log("[mpesa/status] raw result:", JSON.stringify(result, null, 2));
@@ -20,11 +41,8 @@ export async function GET(req: NextRequest) {
 
     // On COMPLETE, activate in DB as a backup to the webhook
     if (state === "COMPLETE") {
-      const supabase = createAdminClient();
-
       if (type === "agency") {
-        // Find profile with this checkout ID and activate
-        const { data: profile } = await supabase
+        const { data: profile } = await supabaseAdmin
           .from("profiles")
           .select("id, subscription_status")
           .eq("mpesa_checkout_id", invoiceId)
@@ -33,7 +51,7 @@ export async function GET(req: NextRequest) {
         if (profile && profile.subscription_status !== "active") {
           const expiresAt = new Date();
           expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-          await supabase.from("profiles").update({
+          await supabaseAdmin.from("profiles").update({
             account_type: "agencija",
             verified: true,
             subscription_status: "active",
@@ -42,8 +60,7 @@ export async function GET(req: NextRequest) {
           }).eq("id", profile.id);
         }
       } else {
-        // Ad purchase — find ads with this checkout ID
-        const { data: ads } = await supabase
+        const { data: ads } = await supabaseAdmin
           .from("advertisements")
           .select("id, duration_days, payment_status")
           .eq("mpesa_checkout_id", invoiceId);
@@ -52,7 +69,7 @@ export async function GET(req: NextRequest) {
           for (const ad of ads) {
             if (ad.payment_status !== "paid") {
               const expiresAt = new Date(Date.now() + (ad.duration_days ?? 30) * 24 * 60 * 60 * 1000).toISOString();
-              await supabase.from("advertisements").update({
+              await supabaseAdmin.from("advertisements").update({
                 active: true,
                 payment_status: "paid",
                 expires_at: expiresAt,

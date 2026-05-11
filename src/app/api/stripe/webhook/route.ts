@@ -8,17 +8,17 @@ export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature")!;
 
-  let event: Stripe.Event;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (webhookSecret) {
-    try {
-      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-    } catch {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-    }
-  } else {
-    // No secret configured — parse event directly (dev only)
-    event = JSON.parse(body) as Stripe.Event;
+  if (!webhookSecret) {
+    console.error("[stripe/webhook] STRIPE_WEBHOOK_SECRET is not set");
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+  }
+
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+  } catch {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   const supabase = await createClient();
