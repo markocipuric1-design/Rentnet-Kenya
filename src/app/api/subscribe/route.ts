@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resend, FROM_EMAIL } from "@/lib/resend";
+import { render } from "@react-email/render";
+import { WelcomeEmail } from "@/emails/welcome";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +33,14 @@ export async function POST(req: NextRequest) {
       console.error("[subscribe] insert error:", error.message);
       return NextResponse.json({ error: "Could not save subscription." }, { status: 500 });
     }
+
+    const html = await render(WelcomeEmail({}));
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: "Welcome to Rentnet — you're on the list 🏠",
+      html,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (e) {

@@ -2,7 +2,7 @@ import { Button, Hr, Text } from "@react-email/components";
 import { EmailLayout } from "./layout";
 
 interface WelcomeEmailProps {
-  name: string;
+  name?: string;
 }
 
 export function WelcomeEmail({ name }: WelcomeEmailProps) {
