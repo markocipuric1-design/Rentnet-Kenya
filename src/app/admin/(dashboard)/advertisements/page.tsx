@@ -14,7 +14,7 @@ type Ad = {
   title: string;
   image_url: string;
   link_url: string;
-  placement: "sidebar" | "infeed" | "featured-partner";
+  placement: "sidebar" | "infeed" | "featured-partner" | "homepage";
   category: string | null;
   priority: number;
   active: boolean;
@@ -30,12 +30,14 @@ const PLACEMENT_LABELS: Record<string, string> = {
   sidebar: "Sidebar",
   infeed: "In-feed",
   "featured-partner": "Featured Partner",
+  homepage: "Homepage Banner",
 };
 
 const PLACEMENT_COLORS: Record<string, string> = {
   sidebar: "bg-primary/10 text-primary",
   infeed: "bg-sky-500/10 text-sky-600",
   "featured-partner": "bg-amber-500/10 text-amber-600",
+  homepage: "bg-emerald-500/10 text-emerald-600",
 };
 
 const PAYMENT_BADGE: Record<string, string> = {
@@ -141,6 +143,7 @@ function AdModal({ ad, onClose, onSave }: {
                 <option value="sidebar">Sidebar (property detail)</option>
                 <option value="infeed">In-feed (listings page)</option>
                 <option value="featured-partner">Featured Partner (directory)</option>
+                <option value="homepage">Homepage Banner</option>
               </select>
             </div>
             <div>
