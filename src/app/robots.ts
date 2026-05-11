@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/dashboard/", "/api/"],
+        disallow: ["/admin/", "/dashboard/", "/api/", "/auth/"],
       },
     ],
     sitemap: "https://rentnet.co.ke/sitemap.xml",
