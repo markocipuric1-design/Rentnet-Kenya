@@ -82,9 +82,11 @@ export default function MortgageCalculatorPage() {
             <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center">
               <Calculator className="h-5 w-5 text-primary" />
             </div>
-            Property Calculator
+            Mortgage & Rental Yield Calculator
           </h1>
-          <p className="text-muted-foreground mt-2 text-sm">Estimate monthly mortgage payments or calculate rental yield on any property in Kenya.</p>
+          <p className="text-muted-foreground mt-2 text-sm max-w-2xl">
+            Planning to buy property in Kenya? Use our free calculator to instantly estimate your monthly mortgage repayments or find out how much rental yield a property can generate — before you commit to anything.
+          </p>
         </div>
 
         {/* Tabs */}
@@ -253,15 +255,43 @@ export default function MortgageCalculatorPage() {
           </div>
         </div>
 
+        {/* Info section */}
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            {
+              title: "How is the monthly payment calculated?",
+              body: "We use the standard amortisation formula: M = P × [r(1+r)ⁿ] ÷ [(1+r)ⁿ−1], where P is the loan amount, r is the monthly interest rate, and n is the total number of payments. This matches how Kenyan banks like KCB, Equity, and NCBA compute repayments.",
+            },
+            {
+              title: "What interest rate should I use?",
+              body: "Kenyan mortgage rates currently range between 12% and 14% per year. Use 13% as a baseline, then adjust based on quotes from your bank. Fixed rates give you certainty; variable rates can go lower or higher depending on the Central Bank of Kenya (CBK) benchmark rate.",
+            },
+            {
+              title: "What is a good rental yield in Kenya?",
+              body: "A net yield above 7% is considered excellent in Kenya. Most Nairobi suburbs return 4–8%. Areas like Ruaka, Athi River, and Kitengela are currently popular for higher yields. Always subtract management fees, maintenance, and vacancy periods before deciding.",
+            },
+          ].map((item) => (
+            <div key={item.title} className="bg-card border border-border rounded-2xl p-5">
+              <p className="font-bold text-foreground text-sm mb-2">{item.title}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{item.body}</p>
+            </div>
+          ))}
+        </div>
+
         {/* CTA */}
-        <div className="mt-10 bg-primary/5 border border-primary/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-6 bg-primary rounded-2xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <p className="font-bold text-foreground">Ready to find your property?</p>
-            <p className="text-sm text-muted-foreground mt-0.5">Browse thousands of listings across Kenya.</p>
+            <p className="font-extrabold text-white text-lg">Found a property you like?</p>
+            <p className="text-primary-foreground/80 text-sm mt-1">Run the numbers here, then browse thousands of active listings across Kenya — houses, apartments, land and commercial.</p>
           </div>
-          <Link href="/listings" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-3 rounded-xl text-sm transition-all hover:-translate-y-0.5 shadow-md shadow-primary/20 whitespace-nowrap">
-            Browse Listings
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+            <Link href="/listings" className="bg-white text-primary font-bold px-6 py-3 rounded-xl text-sm transition-all hover:-translate-y-0.5 shadow-lg whitespace-nowrap text-center">
+              Browse Listings →
+            </Link>
+            <Link href="/agents" className="border border-white/30 text-white font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/10 transition-all whitespace-nowrap text-center">
+              Talk to an Agent
+            </Link>
+          </div>
         </div>
       </main>
 
