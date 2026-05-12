@@ -114,22 +114,47 @@ export function CookieBanner() {
                   {" "}· Kenya Data Protection Act 2019.
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+              {/* Mobile layout */}
+              <div className="flex flex-col gap-2 w-full sm:hidden">
+                <button
+                  onClick={acceptAll}
+                  className="w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md shadow-primary/20"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" /> Accept All
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={rejectAll}
+                    className="flex-1 border border-border hover:bg-accent text-muted-foreground hover:text-foreground font-semibold px-4 py-2 rounded-xl text-sm transition-all"
+                  >
+                    Reject All
+                  </button>
+                  <button
+                    onClick={() => setModalOpen(true)}
+                    className="flex-1 border border-primary/40 text-primary hover:bg-primary/5 font-semibold px-4 py-2 rounded-xl text-sm transition-all"
+                  >
+                    Manage
+                  </button>
+                </div>
+              </div>
+
+              {/* Desktop layout */}
+              <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={rejectAll}
-                  className="flex-1 sm:flex-none border border-border hover:bg-accent text-muted-foreground hover:text-foreground font-semibold px-4 py-2 rounded-xl text-sm transition-all"
+                  className="border border-border hover:bg-accent text-muted-foreground hover:text-foreground font-semibold px-4 py-2 rounded-xl text-sm transition-all"
                 >
                   Reject All
                 </button>
                 <button
                   onClick={() => setModalOpen(true)}
-                  className="flex-1 sm:flex-none border border-primary/40 text-primary hover:bg-primary/5 font-semibold px-4 py-2 rounded-xl text-sm transition-all"
+                  className="border border-primary/40 text-primary hover:bg-primary/5 font-semibold px-4 py-2 rounded-xl text-sm transition-all"
                 >
                   Manage
                 </button>
                 <button
                   onClick={acceptAll}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 py-2 rounded-xl text-sm transition-all shadow-md shadow-primary/20"
+                  className="flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 py-2 rounded-xl text-sm transition-all shadow-md shadow-primary/20"
                 >
                   <ShieldCheck className="h-3.5 w-3.5" /> Accept All
                 </button>
