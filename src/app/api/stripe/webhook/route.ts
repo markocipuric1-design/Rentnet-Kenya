@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     await supabase.from("profiles").update({
       stripe_subscription_id: sub.id,
       subscription_status: status,
+      ...(status === "active" ? { trial_ends_at: null } : {}),
     }).eq("id", userId);
   };
 
@@ -72,10 +73,11 @@ export async function POST(req: NextRequest) {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
         const userId = sub.metadata?.supabase_user_id;
         if (userId) {
-          const profileUpdate: Record<string, string | boolean> = {
+          const profileUpdate: Record<string, string | boolean | null> = {
             stripe_customer_id: session.customer as string,
             stripe_subscription_id: sub.id,
             subscription_status: "active",
+            trial_ends_at: null,
           };
           if (sub.metadata?.activate_agency === "true") {
             profileUpdate.account_type = "agencija";

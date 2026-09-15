@@ -14,11 +14,11 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.account_type !== "administrator") redirect("/");
+  if (!profile || !["administrator", "editor"].includes(profile.account_type)) redirect("/");
 
   return (
     <div className="flex min-h-screen bg-background">
-      <AdminSidebar userName={profile.full_name ?? "Admin"} userEmail={user.email} />
+      <AdminSidebar userName={profile.full_name ?? "Admin"} userEmail={user.email} role={profile.account_type as "administrator" | "editor"} />
       <div className="flex-1 min-h-screen overflow-auto">
         {children}
       </div>

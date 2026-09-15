@@ -6,6 +6,7 @@ import {
   CreditCard, Clock, User, Mail,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 import { processImage } from "@/lib/process-image";
 import { partnerCategoriesData } from "@/lib/content-data";
 
@@ -198,6 +199,7 @@ function AdModal({ ad, onClose, onSave }: {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminAdvertisementsPage() {
+  useRequireAdmin();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalAd, setModalAd] = useState<Ad | null | "new">(null);

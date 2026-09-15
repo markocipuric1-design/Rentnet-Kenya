@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Search, ChevronDown, CheckCircle, XCircle, Clock, Trash2, Pencil, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 
 type Profile = {
   id: string;
@@ -20,6 +21,7 @@ const ROLES = [
   { value: "fizicna_oseba", label: "Individual",       color: "bg-emerald-500/10 text-emerald-600" },
   { value: "agencija",      label: "Agency",            color: "bg-sky-500/10 text-sky-600" },
   { value: "partner",       label: "Business Partner",  color: "bg-amber-500/10 text-amber-600" },
+  { value: "editor",        label: "Editor",            color: "bg-violet-500/10 text-violet-600" },
   { value: "administrator", label: "Administrator",     color: "bg-primary/10 text-primary" },
 ];
 
@@ -42,6 +44,7 @@ function Avatar({ u, size = "md" }: { u: Profile; size?: "sm" | "md" }) {
 }
 
 export default function AdminUsersPage() {
+  useRequireAdmin();
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Users, Home, Building2, BarChart3, Shield, ShieldOff, Hash, UserCheck, Wrench, CheckCircle, XCircle, MapPin, LayoutGrid, ChevronUp, ChevronDown, Plus, Trash2 } from "lucide-react";
 import { type FeatureTile, DEFAULT_FEATURE_TILES } from "@/components/sections/bento-features";
 import { createClient } from "@/lib/supabase/client";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 
 type Stats = { users: number; listings: number; pendingAgencies: number; activeListings: number; pendingProfiles: number; pendingPartners: number };
 type RecentListing = { id: string; title: string; type: string; city: string; price: number; status: string; created_at: string };
@@ -32,6 +33,7 @@ function Toggle({ enabled, onToggle, disabled }: { enabled: boolean; onToggle: (
 }
 
 export default function AdminDashboardPage() {
+  useRequireAdmin();
   const [stats, setStats] = useState<Stats>({ users: 0, listings: 0, pendingAgencies: 0, activeListings: 0, pendingProfiles: 0, pendingPartners: 0 });
   const [pendingPartners, setPendingPartners] = useState<PendingPartner[]>([]);
   const [recentListings, setRecentListings] = useState<RecentListing[]>([]);

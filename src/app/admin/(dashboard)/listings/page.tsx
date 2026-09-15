@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Trash2, Eye, EyeOff, Pencil, X, Save } from "lucide-react";
+import Link from "next/link";
+import { Search, Trash2, Eye, EyeOff, Pencil, X, Save, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/format-price";
 
@@ -149,16 +150,25 @@ export default function AdminListingsPage() {
   const [filterStatus, setFilterStatus] = useState("vse");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editListing, setEditListing] = useState<Listing | null>(null);
+  const [isEditor, setIsEditor] = useState(false);
 
   useEffect(() => {
     (async () => {
       const supabase = createClient();
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: caller } = user
+        ? await supabase.from("profiles").select("account_type").eq("id", user.id).single()
+        : { data: null };
+      const editor = caller?.account_type === "editor";
+      setIsEditor(editor);
+
+      const query = supabase
         .from("listings")
-        .select("id, title, type, category, city, price, status, created_at, user_id")
+        .select("id, title, type, category, city, price, status, created_at, user_id" + (editor ? ", profiles!inner(staff_managed)" : ""))
         .order("created_at", { ascending: false });
+      const { data, error } = editor ? await query.eq("profiles.staff_managed", true) : await query;
       if (error) console.error("Listings fetch error:", error.message);
-      setListings(data ?? []);
+      setListings((data as unknown as Listing[]) ?? []);
       setLoading(false);
     })();
   }, []);
@@ -173,24 +183,27 @@ export default function AdminListingsPage() {
 
   const handleToggleStatus = async (id: string, current: string) => {
     const newStatus = current === "active" ? "draft" : "active";
-    const supabase = createClient();
-    const { error } = await supabase.from("listings").update({ status: newStatus }).eq("id", id);
+    const { error } = isEditor
+      ? await (await fetch(`/api/admin/staff-listings/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: newStatus }) })).json()
+      : await createClient().from("listings").update({ status: newStatus }).eq("id", id);
     if (!error) setListings((prev) => prev.map((l) => l.id === id ? { ...l, status: newStatus } : l));
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this listing?")) return;
     setDeleting(id);
-    const supabase = createClient();
-    const { error } = await supabase.from("listings").delete().eq("id", id);
+    const { error } = isEditor
+      ? await (await fetch(`/api/admin/staff-listings/${id}`, { method: "DELETE" })).json()
+      : await createClient().from("listings").delete().eq("id", id);
     if (!error) setListings((prev) => prev.filter((l) => l.id !== id));
     setDeleting(null);
   };
 
   const handleSaveEdit = async (updated: Partial<Listing>) => {
     if (!editListing) return;
-    const supabase = createClient();
-    const { error } = await supabase.from("listings").update(updated).eq("id", editListing.id);
+    const { error } = isEditor
+      ? await (await fetch(`/api/admin/staff-listings/${editListing.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })).json()
+      : await createClient().from("listings").update(updated).eq("id", editListing.id);
     if (!error) setListings((prev) => prev.map((l) => l.id === editListing.id ? { ...l, ...updated } : l));
   };
 
@@ -215,9 +228,17 @@ export default function AdminListingsPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-foreground">Listings</h1>
-        <p className="text-muted-foreground text-sm mt-1">{listings.length} total</p>
+      <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-extrabold text-foreground">Listings</h1>
+          <p className="text-muted-foreground text-sm mt-1">{listings.length} total</p>
+        </div>
+        <Link
+          href="/admin/listings/new"
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-primary/20"
+        >
+          <Plus className="h-4 w-4" /> Add listing
+        </Link>
       </div>
 
       {/* Filters */}

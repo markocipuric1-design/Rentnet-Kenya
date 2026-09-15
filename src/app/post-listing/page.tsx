@@ -1288,7 +1288,7 @@ export default function OddajOglasPage() {
       { data: allSettings },
       { count: currentCount },
     ] = await Promise.all([
-      supabase.from("profiles").select("account_type").eq("id", user.id).single(),
+      supabase.from("profiles").select("account_type, staff_managed, subscription_status, trial_ends_at").eq("id", user.id).single(),
       supabase.from("site_settings").select("key, value"),
       supabase.from("listings").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["active", "pending"]),
     ]);
@@ -1296,9 +1296,15 @@ export default function OddajOglasPage() {
     const s = Object.fromEntries((allSettings ?? []).map(r => [r.key, r.value]));
     const moderationEnabled = s["moderation_enabled"] === "true";
     const accountType = profile?.account_type ?? "fizicna_oseba";
+    type ProfileGateFields = { staff_managed?: boolean; subscription_status?: string; trial_ends_at?: string | null };
+    const staffManaged = (profile as ProfileGateFields | null)?.staff_managed === true;
+    const trialEndsAt = (profile as ProfileGateFields | null)?.trial_ends_at;
+    const trialExpired = !!trialEndsAt && new Date(trialEndsAt) <= new Date();
 
-    if (accountType === "agencija" && (profile as { subscription_status?: string } | null)?.subscription_status !== "active") {
-      setSubmitError("Your agency does not have an active subscription. Activate the Agency plan on the Pricing page.");
+    if (!staffManaged && accountType === "agencija" && (trialExpired || (profile as ProfileGateFields | null)?.subscription_status !== "active")) {
+      setSubmitError(trialExpired
+        ? "Your free trial has ended. Activate the Agency plan on the Pricing page to keep posting."
+        : "Your agency does not have an active subscription. Activate the Agency plan on the Pricing page.");
       setSubmitting(false);
       return;
     }
@@ -1306,7 +1312,7 @@ export default function OddajOglasPage() {
     const limitKey = `limit_${accountType}`;
     const limit = parseInt(s[limitKey] ?? "3");
 
-    if ((currentCount ?? 0) >= limit) {
+    if (!staffManaged && (currentCount ?? 0) >= limit) {
       setSubmitError(`You have reached your listing limit (${limit}). Delete an existing listing or contact the administrator.`);
       setSubmitting(false);
       return;

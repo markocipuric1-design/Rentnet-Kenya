@@ -5,6 +5,7 @@ import { Search, Trash2, Pencil, CheckCircle, XCircle, MapPin, Wrench, Globe, Ph
 import { createClient } from "@/lib/supabase/client";
 import { partnerCategoriesData } from "@/lib/content-data";
 import { PartnerRegistrationForm, ExistingPartner } from "@/components/ui/partner-registration-form";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 
 async function adminUpdatePartner(id: string, payload: Record<string, unknown>): Promise<string | null> {
   try {
@@ -40,6 +41,7 @@ type Partner = {
 };
 
 export default function AdminPartnersPage() {
+  useRequireAdmin();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

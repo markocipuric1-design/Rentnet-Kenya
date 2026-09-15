@@ -3,25 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, Home, Building2, LogOut, Shield, Menu, X, ArrowLeft, Wrench, Megaphone, BookOpen, CreditCard, FlaskConical } from "lucide-react";
+import { LayoutDashboard, Users, Home, Building2, LogOut, Shield, Menu, X, ArrowLeft, Wrench, Megaphone, BookOpen, CreditCard, FlaskConical, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/listings", label: "Listings", icon: Home },
+  { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true, adminOnly: true },
+  { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
   { href: "/admin/agencies", label: "Agencies", icon: Building2 },
-  { href: "/admin/partners", label: "Partners", icon: Wrench },
-  { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone },
-  { href: "/admin/blog", label: "Blog", icon: BookOpen },
-  { href: "/admin/payments", label: "Payments", icon: CreditCard },
-  { href: "/admin/test-payment", label: "Test Payment", icon: FlaskConical },
+  { href: "/admin/individuals", label: "Individuals", icon: UserPlus },
+  { href: "/admin/listings", label: "Listings", icon: Home },
+  { href: "/admin/partners", label: "Partners", icon: Wrench, adminOnly: true },
+  { href: "/admin/advertisements", label: "Advertisements", icon: Megaphone, adminOnly: true },
+  { href: "/admin/blog", label: "Blog", icon: BookOpen, adminOnly: true },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard, adminOnly: true },
+  { href: "/admin/test-payment", label: "Test Payment", icon: FlaskConical, adminOnly: true },
 ];
 
-export function AdminSidebar({ userName, userEmail }: { userName: string; userEmail?: string }) {
+export function AdminSidebar({ userName, userEmail, role }: { userName: string; userEmail?: string; role: "administrator" | "editor" }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const items = navItems.filter((item) => role === "administrator" || !item.adminOnly);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -44,7 +46,7 @@ export function AdminSidebar({ userName, userEmail }: { userName: string; userEm
       </div>
 
       <nav className="flex-1 p-3 space-y-0.5">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link

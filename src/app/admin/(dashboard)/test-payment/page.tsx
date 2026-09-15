@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { CheckCircle, AlertTriangle, Loader2, FlaskConical } from "lucide-react";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 
 export default function TestPaymentPage() {
+  useRequireAdmin();
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");

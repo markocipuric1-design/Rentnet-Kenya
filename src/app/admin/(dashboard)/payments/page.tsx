@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CreditCard, TrendingUp, Clock, AlertTriangle, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
@@ -51,6 +52,13 @@ function formatAmount(amount: number, currency: string) {
 }
 
 export default async function AdminPaymentsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: caller } = user
+    ? await supabase.from("profiles").select("account_type").eq("id", user.id).single()
+    : { data: null };
+  if (caller?.account_type !== "administrator") redirect("/admin");
+
   const admin = createAdminClient();
 
   const [{ data: transactions }, { data: subscriptions }] = await Promise.all([

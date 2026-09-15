@@ -61,6 +61,8 @@ type Profile = {
   stripe_subscription_id: string | null;
   subscription_status: string | null;
   subscription_expires_at: string | null;
+  staff_managed: boolean | null;
+  trial_ends_at: string | null;
 };
 
 type EditForm = {
@@ -290,7 +292,7 @@ export default function ProfilPage() {
         const s = Object.fromEntries((settingsRows ?? []).map(r => [r.key, r.value]));
         const accountType = prof?.account_type ?? "fizicna_oseba";
         const limitKey = `limit_${accountType}`;
-        setListingLimit(parseInt(s[limitKey] ?? "3"));
+        setListingLimit(prof?.staff_managed ? 9999 : parseInt(s[limitKey] ?? "3"));
 
         setListings(list ?? []);
         setDailyViews(daily ?? []);
@@ -580,8 +582,29 @@ export default function ProfilPage() {
           </div>
         )}
 
+        {/* Agency — free trial in progress (claimed staff-created profile) */}
+        {profile.account_type === "agencija" && !profile.staff_managed &&
+          profile.trial_ends_at && new Date(profile.trial_ends_at) > new Date() && (
+          <div className="flex items-start gap-3 bg-sky-500/10 border border-sky-500/30 rounded-2xl px-5 py-4 mb-6">
+            <Zap className="h-5 w-5 text-sky-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-sky-700 dark:text-sky-400">Free trial active</p>
+              <p className="text-xs text-sky-600/80 mt-0.5">
+                Your trial ends {new Date(profile.trial_ends_at).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}. Activate the Agency plan any time before then to keep posting without interruption.
+              </p>
+            </div>
+            <button
+              onClick={handleSubscribe}
+              className="flex-shrink-0 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all"
+            >
+              Activate
+            </button>
+          </div>
+        )}
+
         {/* Agency — no active subscription warning */}
-        {profile.account_type === "agencija" && (
+        {profile.account_type === "agencija" && !profile.staff_managed &&
+          !(profile.trial_ends_at && new Date(profile.trial_ends_at) > new Date()) && (
           profile.subscription_status !== "active" ||
           !profile.subscription_expires_at ||
           new Date(profile.subscription_expires_at) <= new Date()

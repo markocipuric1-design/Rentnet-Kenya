@@ -17,6 +17,7 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
 
   useEffect(() => {
     // Supabase sets the session from the URL hash when this page loads
@@ -39,8 +40,16 @@ export default function ResetPasswordPage() {
       setLoading(false);
       return;
     }
+    let claimedTrialEndsAt: string | null = null;
+    try {
+      const res = await fetch("/api/claim-profile", { method: "POST" });
+      const json = await res.json();
+      if (json.claimed && json.trialEndsAt) claimedTrialEndsAt = json.trialEndsAt;
+    } catch { /* non-critical — password is already set either way */ }
+
+    setTrialEndsAt(claimedTrialEndsAt);
     setDone(true);
-    setTimeout(() => router.push("/dashboard"), 2000);
+    setTimeout(() => router.push("/dashboard"), claimedTrialEndsAt ? 3500 : 2000);
   };
 
   return (
@@ -55,7 +64,16 @@ export default function ResetPasswordPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-extrabold text-foreground mb-2">Password updated!</h2>
-                <p className="text-muted-foreground text-sm">Redirecting you to your dashboard…</p>
+                {trialEndsAt ? (
+                  <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                    Your profile is now yours to manage. You have a free 14-day trial until{" "}
+                    <strong className="text-foreground">
+                      {new Date(trialEndsAt).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}
+                    </strong>{" "}— activate the Agency plan any time before then to keep posting.
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground text-sm">Redirecting you to your dashboard…</p>
+                )}
               </div>
             </div>
           ) : (

@@ -6,6 +6,7 @@ import {
   X, Save, Upload, Search, BookOpen,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 
@@ -41,6 +42,7 @@ const emptyForm = {
 };
 
 export default function AdminBlogPage() {
+  useRequireAdmin();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

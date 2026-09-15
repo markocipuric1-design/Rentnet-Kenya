@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
             verified: true,
             subscription_status: "active",
             subscription_expires_at: expiresAt.toISOString(),
+            trial_ends_at: null,
             mpesa_checkout_id: null,
           }).eq("id", profile.id);
         }
