@@ -162,13 +162,23 @@ export default function AdminListingsPage() {
       const editor = caller?.account_type === "editor";
       setIsEditor(editor);
 
-      const query = supabase
+      // listings.user_id isn't linked to profiles via a foreign key PostgREST
+      // can embed, so editors get their allowed listings in two steps.
+      let ownerIds: string[] | null = null;
+      if (editor) {
+        const { data: staffProfiles } = await supabase.from("profiles").select("id").eq("staff_managed", true);
+        ownerIds = (staffProfiles ?? []).map((p) => p.id);
+      }
+
+      let query = supabase
         .from("listings")
-        .select("id, title, type, category, city, price, status, created_at, user_id" + (editor ? ", profiles!inner(staff_managed)" : ""))
+        .select("id, title, type, category, city, price, status, created_at, user_id")
         .order("created_at", { ascending: false });
-      const { data, error } = editor ? await query.eq("profiles.staff_managed", true) : await query;
+      if (ownerIds) query = query.in("user_id", ownerIds.length > 0 ? ownerIds : ["00000000-0000-0000-0000-000000000000"]);
+
+      const { data, error } = await query;
       if (error) console.error("Listings fetch error:", error.message);
-      setListings((data as unknown as Listing[]) ?? []);
+      setListings(data ?? []);
       setLoading(false);
     })();
   }, []);

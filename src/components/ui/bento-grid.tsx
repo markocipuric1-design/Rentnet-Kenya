@@ -47,7 +47,7 @@ function BentoGrid({ items }: BentoGridProps) {
                 {item.icon}
               </div>
               <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
-                {item.status || "Aktivno"}
+                {item.status || "Active"}
               </span>
             </div>
 

@@ -17,14 +17,17 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
+  const [linkExpired, setLinkExpired] = useState(false);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
 
   useEffect(() => {
     // Supabase sets the session from the URL hash when this page loads
     const supabase = createClient();
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setReady(true);
+    const timeout = setTimeout(() => setLinkExpired(true), 6000);
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") { clearTimeout(timeout); setReady(true); }
     });
+    return () => { sub.subscription.unsubscribe(); clearTimeout(timeout); };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +90,18 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-lg shadow-black/5">
-                {!ready ? (
+                {!ready && linkExpired ? (
+                  <div className="text-center py-4 flex flex-col items-center gap-3">
+                    <p className="text-sm text-foreground font-semibold">This link has expired or was already used.</p>
+                    <p className="text-xs text-muted-foreground max-w-xs">Request a new one and it will work the same way.</p>
+                    <Link
+                      href="/forgot-password"
+                      className="mt-1 inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-5 py-2.5 rounded-xl text-sm transition-all"
+                    >
+                      Request a new link
+                    </Link>
+                  </div>
+                ) : !ready ? (
                   <p className="text-sm text-muted-foreground text-center py-4">Verifying your reset link…</p>
                 ) : (
                   <form onSubmit={handleSubmit} className="flex flex-col gap-5">

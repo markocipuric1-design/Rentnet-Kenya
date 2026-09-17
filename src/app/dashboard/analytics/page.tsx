@@ -38,10 +38,10 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
   );
 }
 
-export default function AnalytikaPage() {
+export default function AnalyticsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [combinedDaily, setCombinedDaily] = useState<{ date: string; oglasi: number; profil: number }[]>([]);
+  const [combinedDaily, setCombinedDaily] = useState<{ date: string; listings: number; profile: number }[]>([]);
   const [topListings, setTopListings] = useState<{ title: string; city: string; type: string; total: number; month: number }[]>([]);
   const [totals, setTotals] = useState({ listingViews: 0, profileViews: 0, listingMonth: 0, profileMonth: 0 });
 
@@ -49,7 +49,7 @@ export default function AnalytikaPage() {
     (async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login?redirect=/dashboard/analitika"); return; }
+      if (!user) { router.push("/login?redirect=/dashboard/analytics"); return; }
 
       const [
         { data: listingDaily },
@@ -73,8 +73,8 @@ export default function AnalytikaPage() {
       const pMap = Object.fromEntries((profileDaily ?? []).map((d: DayView) => [d.view_date, d.view_count]));
       setCombinedDaily(days.map((d) => ({
         date: formatDate(d),
-        oglasi: lMap[d] ?? 0,
-        profil: pMap[d] ?? 0,
+        listings: lMap[d] ?? 0,
+        profile: pMap[d] ?? 0,
       })));
 
       // Top listings by views
@@ -112,10 +112,10 @@ export default function AnalytikaPage() {
   );
 
   const statCards = [
-    { label: "Ogledi oglasov skupaj", value: totals.listingViews, icon: Eye, color: "text-primary bg-primary/10" },
-    { label: "Ogledi oglasov (30 dni)", value: totals.listingMonth, icon: TrendingUp, color: "text-emerald-500 bg-emerald-500/10" },
-    { label: "Ogledi profila skupaj", value: totals.profileViews, icon: Users, color: "text-sky-500 bg-sky-500/10" },
-    { label: "Ogledi profila (30 dni)", value: totals.profileMonth, icon: BarChart2, color: "text-amber-500 bg-amber-500/10" },
+    { label: "Total listing views", value: totals.listingViews, icon: Eye, color: "text-primary bg-primary/10" },
+    { label: "Listing views (30 days)", value: totals.listingMonth, icon: TrendingUp, color: "text-emerald-500 bg-emerald-500/10" },
+    { label: "Total profile views", value: totals.profileViews, icon: Users, color: "text-sky-500 bg-sky-500/10" },
+    { label: "Profile views (30 days)", value: totals.profileMonth, icon: BarChart2, color: "text-amber-500 bg-amber-500/10" },
   ];
 
   const noData = totals.listingViews === 0 && totals.profileViews === 0;
@@ -133,7 +133,7 @@ export default function AnalytikaPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-extrabold text-foreground">Analytics</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Statistika ogledov vaših oglasov in profila</p>
+            <p className="text-sm text-muted-foreground mt-0.5">View statistics for your listings and profile</p>
           </div>
         </div>
 
@@ -153,24 +153,24 @@ export default function AnalytikaPage() {
         {noData ? (
           <div className="bg-card border border-border rounded-2xl p-16 text-center">
             <BarChart2 className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-foreground mb-2">Še ni podatkov</h3>
+            <h3 className="text-lg font-bold text-foreground mb-2">No data yet</h3>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Ko bodo vaši oglasi ali profil obiskani, se bodo tukaj prikazali grafi.
+              Once your listings or profile get visited, charts will show up here.
             </p>
           </div>
         ) : (
           <>
             {/* Combined area chart */}
             <div className="bg-card border border-border rounded-2xl p-6 mb-6">
-              <h2 className="text-sm font-bold text-foreground mb-6">Ogledi zadnjih 30 dni</h2>
+              <h2 className="text-sm font-bold text-foreground mb-6">Views in the last 30 days</h2>
               <ResponsiveContainer width="100%" height={220}>
                 <AreaChart data={combinedDaily} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="gradOglasi" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="gradListings" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={COLORS.listings} stopOpacity={0.2} />
                       <stop offset="95%" stopColor={COLORS.listings} stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="gradProfil" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="gradProfile" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={COLORS.profile} stopOpacity={0.2} />
                       <stop offset="95%" stopColor={COLORS.profile} stopOpacity={0} />
                     </linearGradient>
@@ -192,10 +192,10 @@ export default function AnalytikaPage() {
                   <Tooltip content={<CustomTooltip />} />
                   <Legend
                     wrapperStyle={{ fontSize: "12px", paddingTop: "16px" }}
-                    formatter={(value) => value === "oglasi" ? "Oglasi" : "Profil"}
+                    formatter={(value) => value === "listings" ? "Listings" : "Profile"}
                   />
-                  <Area type="monotone" dataKey="oglasi" stroke={COLORS.listings} strokeWidth={2} fill="url(#gradOglasi)" dot={false} activeDot={{ r: 4 }} />
-                  <Area type="monotone" dataKey="profil" stroke={COLORS.profile} strokeWidth={2} fill="url(#gradProfil)" dot={false} activeDot={{ r: 4 }} />
+                  <Area type="monotone" dataKey="listings" stroke={COLORS.listings} strokeWidth={2} fill="url(#gradListings)" dot={false} activeDot={{ r: 4 }} />
+                  <Area type="monotone" dataKey="profile" stroke={COLORS.profile} strokeWidth={2} fill="url(#gradProfile)" dot={false} activeDot={{ r: 4 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -203,7 +203,7 @@ export default function AnalytikaPage() {
             {/* Top listings bar chart */}
             {topListings.length > 0 && (
               <div className="bg-card border border-border rounded-2xl p-6 mb-6">
-                <h2 className="text-sm font-bold text-foreground mb-6">Ogledi po oglasih (skupaj vs zadnjih 30 dni)</h2>
+                <h2 className="text-sm font-bold text-foreground mb-6">Views by listing (total vs last 30 days)</h2>
                 <ResponsiveContainer width="100%" height={Math.max(topListings.length * 52, 160)}>
                   <BarChart
                     data={topListings}
@@ -231,7 +231,7 @@ export default function AnalytikaPage() {
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
                       wrapperStyle={{ fontSize: "12px", paddingTop: "16px" }}
-                      formatter={(value) => value === "total" ? "Skupaj" : "Last 30 days"}
+                      formatter={(value) => value === "total" ? "Total" : "Last 30 days"}
                     />
                     <Bar dataKey="total" name="total" fill={COLORS.listings} radius={[0, 4, 4, 0]} />
                     <Bar dataKey="month" name="month" fill={COLORS.profile} radius={[0, 4, 4, 0]} />

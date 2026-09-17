@@ -255,8 +255,6 @@ export default function SignUpPage() {
     }
     if (s === 3 && isAgency) {
       if (!form.agencyName.trim()) e.agencyName = "Agency name is required.";
-      if (!form.matStevilka.trim()) e.matStevilka = "Registration number is required.";
-      if (!form.davStevilka.trim()) e.davStevilka = "Tax PIN is required.";
       if (!form.address.trim()) e.address = "Address is required.";
       if (!form.postalCode.trim()) e.postalCode = "Postal code is required.";
       if (!form.agencyPhone.trim()) e.agencyPhone = "Phone number is required.";
@@ -837,10 +835,10 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Company Registration No." required error={errors.matStevilka}>
+                    <Field label="Company Registration No." error={errors.matStevilka}>
                       <Input value={form.matStevilka} onChange={v => set("matStevilka", v)} placeholder="PVT-1234567" />
                     </Field>
-                    <Field label="KRA PIN / Tax No." required error={errors.davStevilka}>
+                    <Field label="KRA PIN / Tax No." error={errors.davStevilka}>
                       <Input value={form.davStevilka} onChange={v => set("davStevilka", v)} placeholder="A123456789B" />
                     </Field>
                   </div>

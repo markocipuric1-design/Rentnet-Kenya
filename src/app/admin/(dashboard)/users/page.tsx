@@ -99,7 +99,8 @@ export default function AdminUsersPage() {
 
   const handleChangeRole = async (userId: string, role: string) => {
     const supabase = createClient();
-    await supabase.from("profiles").update({ account_type: role }).eq("id", userId);
+    const { error } = await supabase.from("profiles").update({ account_type: role }).eq("id", userId);
+    if (error) { alert(`Could not change role: ${error.message}`); return; }
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, account_type: role } : u));
     setOpenDropdown(null);
   };
@@ -148,12 +149,13 @@ export default function AdminUsersPage() {
     if (!editUserId) return;
     setSavingEdit(true);
     const supabase = createClient();
-    await supabase.from("profiles").update({
+    const { error } = await supabase.from("profiles").update({
       full_name: editForm.full_name.trim() || null,
       account_type: editForm.account_type,
       profile_status: editForm.profile_status,
       verified: editForm.verified,
     }).eq("id", editUserId);
+    if (error) { alert(`Could not save changes: ${error.message}`); setSavingEdit(false); return; }
     setUsers(prev => prev.map(u => u.id === editUserId ? {
       ...u,
       full_name: editForm.full_name.trim() || null,

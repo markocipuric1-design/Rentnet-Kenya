@@ -21,7 +21,7 @@ export default function AdminIndividualsPage() {
     const supabase = createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("id, full_name, email, phone, city, region, bio, website, created_at")
+      .select("id, full_name, email, phone, city, region, bio, avatar_url, website, instagram, facebook, linkedin, youtube_url, cover_url, founded_year, employee_count, specializations, service_areas, created_at")
       .eq("account_type", "fizicna_oseba")
       .eq("staff_managed", true)
       .order("created_at", { ascending: false });

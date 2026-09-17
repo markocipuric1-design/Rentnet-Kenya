@@ -1297,7 +1297,7 @@ export default function OddajOglasPage() {
     const moderationEnabled = s["moderation_enabled"] === "true";
     const accountType = profile?.account_type ?? "fizicna_oseba";
     type ProfileGateFields = { staff_managed?: boolean; subscription_status?: string; trial_ends_at?: string | null };
-    const staffManaged = (profile as ProfileGateFields | null)?.staff_managed === true;
+    const staffManaged = (profile as ProfileGateFields | null)?.staff_managed === true || accountType === "editor" || accountType === "administrator";
     const trialEndsAt = (profile as ProfileGateFields | null)?.trial_ends_at;
     const trialExpired = !!trialEndsAt && new Date(trialEndsAt) <= new Date();
 

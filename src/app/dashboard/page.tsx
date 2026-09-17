@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Eye, EyeOff, Trash2, CheckCircle, Clock, Home, Save, X, Star, MessageCircle, Camera, Pencil, Globe, Phone, User, Building2, Users, Calendar, Tag, MapPin, ImagePlus, AlertTriangle, Zap, Wrench, ArrowRight, Megaphone, Heart } from "lucide-react";
+import { Plus, Eye, EyeOff, Trash2, CheckCircle, Clock, Home, Save, X, Star, MessageCircle, Camera, Pencil, Globe, Phone, User, Building2, Users, Calendar, Tag, MapPin, ImagePlus, AlertTriangle, Zap, Wrench, ArrowRight, Megaphone, Heart, LayoutGrid, Settings as SettingsIcon } from "lucide-react";
 
 function YoutubeLogo({ className }: { className?: string }) {
   return (
@@ -198,7 +198,9 @@ function BarChart({ data }: { data: { label: string; count: number; colorClass: 
   );
 }
 
-export default function ProfilPage() {
+type DashboardTab = "overview" | "listings" | "saved" | "settings";
+
+export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -229,6 +231,7 @@ export default function ProfilPage() {
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
 
   useEffect(() => {
     (async () => {
@@ -292,7 +295,8 @@ export default function ProfilPage() {
         const s = Object.fromEntries((settingsRows ?? []).map(r => [r.key, r.value]));
         const accountType = prof?.account_type ?? "fizicna_oseba";
         const limitKey = `limit_${accountType}`;
-        setListingLimit(prof?.staff_managed ? 9999 : parseInt(s[limitKey] ?? "3"));
+        const unlimited = prof?.staff_managed || accountType === "editor" || accountType === "administrator";
+        setListingLimit(unlimited ? 9999 : parseInt(s[limitKey] ?? "3"));
 
         setListings(list ?? []);
         setDailyViews(daily ?? []);
@@ -397,6 +401,7 @@ export default function ProfilPage() {
       account_type: profile.account_type,
     });
     setIsEditing(true);
+    setActiveTab("settings");
   };
 
   const handleSaveProfile = async () => {
@@ -797,8 +802,32 @@ export default function ProfilPage() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex items-center gap-1 mb-6 border-b border-border overflow-x-auto">
+          {([
+            { key: "overview", label: "Overview", icon: LayoutGrid },
+            { key: "listings", label: "Listings", icon: Home, count: total },
+            { key: "saved", label: "Saved", icon: Heart, count: savedListings.length },
+            { key: "settings", label: "Settings", icon: SettingsIcon },
+          ] as { key: DashboardTab; label: string; icon: typeof Home; count?: number }[]).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                activeTab === tab.key
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+              {!!tab.count && <span className="text-[11px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">{tab.count}</span>}
+            </button>
+          ))}
+        </div>
+
         {/* Edit profile panel */}
-        {isEditing && (
+        {activeTab === "settings" && isEditing && (
           <div className="bg-card border border-border rounded-2xl p-6 mb-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-bold text-foreground">Edit Profile</h3>
@@ -1039,19 +1068,19 @@ export default function ProfilPage() {
                 {savingProfile
                   ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   : <Save className="h-4 w-4" />}
-                {savingProfile ? "Saving…" : profileSaved ? "✓ Shranjeno" : "Save Changes"}
+                {savingProfile ? "Saving…" : profileSaved ? "✓ Saved" : "Save Changes"}
               </button>
             </div>
           </div>
         )}
 
         {/* YouTube video — agencies only */}
-        {profile.account_type === "agencija" && (
+        {activeTab === "settings" && profile.account_type === "agencija" && (
           <div className="bg-card border border-border rounded-2xl p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <YoutubeLogo className="h-4 w-4 text-red-500" />
-                <h3 className="text-sm font-bold text-foreground">Predstavitveni video</h3>
+                <h3 className="text-sm font-bold text-foreground">Promotional Video</h3>
               </div>
               {!youtubeEditMode ? (
                 <button
@@ -1082,7 +1111,7 @@ export default function ProfilPage() {
                   className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
                 >
                   {youtubeSaving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="h-4 w-4" />}
-                  Shrani
+                  Save
                 </button>
               </div>
             ) : profile.youtube_url && getYouTubeEmbedUrl(profile.youtube_url) ? (
@@ -1092,7 +1121,7 @@ export default function ProfilPage() {
                   className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title="Predstavitveni video"
+                  title="Promotional video"
                 />
               </div>
             ) : (
@@ -1112,11 +1141,12 @@ export default function ProfilPage() {
           </div>
         )}
 
+        {activeTab === "overview" && (<>
         {/* Stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           {[
             { label: "Total listings", value: total, valueColor: "text-foreground" },
-            { label: "Aktivni", value: active, valueColor: "text-emerald-500" },
+            { label: "Active", value: active, valueColor: "text-emerald-500" },
             { label: "Drafts", value: draft, valueColor: "text-muted-foreground" },
             { label: "Sold / Rented", value: sold, valueColor: "text-primary" },
             { label: "Total views", value: totalViews, valueColor: "text-sky-500" },
@@ -1169,13 +1199,13 @@ export default function ProfilPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {typeData.length > 0 && (
               <div className="bg-card border border-border rounded-2xl p-6">
-                <h3 className="text-sm font-bold text-foreground mb-5">Razporeditev po tipu</h3>
+                <h3 className="text-sm font-bold text-foreground mb-5">Breakdown by type</h3>
                 <BarChart data={typeData} />
               </div>
             )}
             {categoryData.length > 0 && (
               <div className="bg-card border border-border rounded-2xl p-6">
-                <h3 className="text-sm font-bold text-foreground mb-5">Razporeditev po vrsti</h3>
+                <h3 className="text-sm font-bold text-foreground mb-5">Breakdown by category</h3>
                 <BarChart data={categoryData} />
               </div>
             )}
@@ -1188,7 +1218,7 @@ export default function ProfilPage() {
             <h3 className="text-sm font-bold text-foreground mb-5">Listings by Status</h3>
             <div className="flex items-end gap-3 h-24">
               {[
-                { label: "Aktivni", count: active, color: "bg-emerald-500" },
+                { label: "Active", count: active, color: "bg-emerald-500" },
                 { label: "Drafts", count: draft, color: "bg-border" },
                 { label: "Sold", count: sold, color: "bg-primary" },
               ].map((bar) => {
@@ -1234,7 +1264,7 @@ export default function ProfilPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-foreground">{r.reviewer?.full_name ?? "Anonimni"}</span>
+                          <span className="text-xs font-semibold text-foreground">{r.reviewer?.full_name ?? "Anonymous"}</span>
                           <div className="flex gap-0.5">
                             {Array.from({ length: 5 }).map((_, i) => (
                               <Star key={i} className={`h-3 w-3 ${i < r.rating ? "fill-amber-400 text-amber-400" : "text-border"}`} />
@@ -1254,7 +1284,9 @@ export default function ProfilPage() {
             </div>
           );
         })()}
+        </>)}
 
+        {activeTab === "listings" && (<>
         {/* Listings table */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
@@ -1304,7 +1336,64 @@ export default function ProfilPage() {
               </Link>
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <>
+            {/* Mobile: stacked cards */}
+            <div className="md:hidden flex flex-col divide-y divide-border">
+              {listings.map((l) => {
+                const status = STATUS_CONFIG[l.status] ?? { label: l.status, color: "bg-muted text-muted-foreground" };
+                return (
+                  <div key={l.id} className="p-4">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <a
+                        href={`/properties/${l.slug ?? l.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-foreground hover:text-primary transition-colors text-sm"
+                      >
+                        {l.title}
+                      </a>
+                      <span className={`flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${status.color}`}>
+                        {status.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">{l.city} · {new Date(l.created_at).toLocaleDateString("en-KE")}</p>
+                    <div className="flex items-center gap-2 flex-wrap mb-3">
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${TYPE_BADGE[l.type] ?? "bg-muted text-muted-foreground"}`}>
+                        {l.type}
+                      </span>
+                      <span className="text-xs font-semibold text-foreground">{formatPrice(l.price, l.type)}</span>
+                      <span className="text-xs text-muted-foreground">{viewMap[l.id]?.total ?? 0} views</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/dashboard/edit-listing/${l.id}`}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-border hover:border-primary/40 hover:bg-accent text-muted-foreground hover:text-primary transition-all text-xs font-semibold"
+                      >
+                        <Pencil className="h-3.5 w-3.5" /> Edit
+                      </Link>
+                      <button
+                        onClick={() => handleToggleStatus(l.id, l.status)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-border hover:border-primary/40 hover:bg-accent text-muted-foreground hover:text-foreground transition-all text-xs font-semibold"
+                      >
+                        {l.status === "active" ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        {l.status === "active" ? "Deactivate" : "Activate"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(l.id)}
+                        disabled={deleting === l.id}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-border hover:border-destructive/40 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all text-xs font-semibold disabled:opacity-40"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Title</th>
@@ -1380,6 +1469,8 @@ export default function ProfilPage() {
                 })}
               </tbody>
             </table>
+            </div>
+            </>
           )}
         </div>
 
@@ -1455,6 +1546,9 @@ export default function ProfilPage() {
             </div>
           )}
         </div>
+        </>)}
+
+        {activeTab === "saved" && (<>
         {/* Saved Listings */}
         <div className="mt-10">
           <div className="flex items-center justify-between mb-5">
@@ -1560,7 +1654,9 @@ export default function ProfilPage() {
 
         {/* Saved Searches */}
         <SavedSearchesSection />
+        </>)}
 
+        {activeTab === "settings" && (<>
         {/* Push Notifications */}
         <div className="mt-10 mb-4">
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -1624,6 +1720,7 @@ export default function ProfilPage() {
             </div>
           </div>
         </div>
+        </>)}
       </main>
 
       <Footer />

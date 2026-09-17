@@ -104,7 +104,7 @@ export function Footer() {
           <Link href="/admin/register" className="hover:text-primary/60 transition-colors text-white/20">
             Admin
           </Link>
-          <Link href="/login?redirect=/admin" className="hover:text-primary/60 transition-colors text-white/20">
+          <Link href="/login?redirect=/admin/agencies" className="hover:text-primary/60 transition-colors text-white/20">
             Editor
           </Link>
         </span>

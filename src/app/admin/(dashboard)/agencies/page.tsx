@@ -17,7 +17,7 @@ type Filter = "pending" | "verified" | "vse";
 export default function AdminAgenciesPage() {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<Filter>("pending");
+  const [filter, setFilter] = useState<Filter>("vse");
   const [processing, setProcessing] = useState<string | null>(null);
   const [modal, setModal] = useState<"new" | Agency | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function AdminAgenciesPage() {
     const supabase = createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("id, full_name, email, phone, city, region, bio, website, verified, created_at, staff_managed")
+      .select("id, full_name, email, phone, city, region, bio, avatar_url, website, instagram, facebook, linkedin, youtube_url, cover_url, founded_year, employee_count, specializations, service_areas, verified, created_at, staff_managed")
       .eq("account_type", "agencija")
       .order("created_at", { ascending: false });
     setAgencies((data as Agency[]) ?? []);
@@ -252,7 +252,7 @@ export default function AdminAgenciesPage() {
           accountType="agencija"
           initial={modal === "new" ? undefined : modal}
           onClose={() => setModal(null)}
-          onSaved={() => { setModal(null); load(); }}
+          onSaved={() => { setModal(null); setFilter("vse"); load(); }}
         />
       )}
     </div>

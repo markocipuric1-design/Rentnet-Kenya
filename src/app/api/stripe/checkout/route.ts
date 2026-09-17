@@ -21,7 +21,7 @@ export async function POST() {
   }
 
   if (profile.account_type === "administrator") {
-    return NextResponse.json({ error: "Administratorji ne morejo naročiti tega paketa." }, { status: 403 });
+    return NextResponse.json({ error: "Administrators cannot subscribe to this plan." }, { status: 403 });
   }
 
   let customerId = (profile.stripe_customer_id ?? null) as string | null;

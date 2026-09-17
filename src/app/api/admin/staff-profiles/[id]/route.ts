@@ -4,7 +4,9 @@ import { requireStaff, canManage } from "@/lib/require-staff";
 import { deleteAllUserData } from "@/lib/delete-user-data";
 
 const EDITABLE_FIELDS = new Set([
-  "full_name", "email", "phone", "city", "region", "bio", "website", "verified", "profile_status",
+  "full_name", "email", "phone", "city", "region", "bio", "avatar_url", "verified", "profile_status",
+  "website", "instagram", "facebook", "linkedin", "youtube_url", "cover_url",
+  "founded_year", "employee_count", "specializations", "service_areas",
 ]);
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
