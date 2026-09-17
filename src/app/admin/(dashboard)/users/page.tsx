@@ -55,7 +55,8 @@ export default function AdminUsersPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editUserId, setEditUserId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ full_name: "", account_type: "", profile_status: "", verified: false });
+  const [editForm, setEditForm] = useState({ full_name: "", email: "", account_type: "", profile_status: "", verified: false });
+  const [emailError, setEmailError] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
@@ -141,13 +142,27 @@ export default function AdminUsersPage() {
   };
 
   const openEdit = (u: Profile) => {
-    setEditForm({ full_name: u.full_name ?? "", account_type: u.account_type, profile_status: u.profile_status, verified: u.verified });
+    setEditForm({ full_name: u.full_name ?? "", email: u.email ?? "", account_type: u.account_type, profile_status: u.profile_status, verified: u.verified });
+    setEmailError("");
     setEditUserId(u.id);
   };
 
   const handleSaveEdit = async () => {
     if (!editUserId) return;
+    setEmailError("");
     setSavingEdit(true);
+
+    const current = users.find(u => u.id === editUserId);
+    const emailChanged = editForm.email.trim() && editForm.email.trim() !== (current?.email ?? "");
+    if (emailChanged) {
+      const res = await fetch(`/api/admin/users/${editUserId}/email`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: editForm.email.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setEmailError(json.error ?? "Could not update email"); setSavingEdit(false); return; }
+    }
+
     const supabase = createClient();
     const { error } = await supabase.from("profiles").update({
       full_name: editForm.full_name.trim() || null,
@@ -159,6 +174,7 @@ export default function AdminUsersPage() {
     setUsers(prev => prev.map(u => u.id === editUserId ? {
       ...u,
       full_name: editForm.full_name.trim() || null,
+      email: editForm.email.trim() || u.email,
       account_type: editForm.account_type,
       profile_status: editForm.profile_status,
       verified: editForm.verified,
@@ -494,6 +510,20 @@ export default function AdminUsersPage() {
                     className="w-full bg-muted/50 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
                     placeholder="Full name"
                   />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">Email (login)</label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                    className="w-full bg-muted/50 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
+                    placeholder="user@example.com"
+                  />
+                  {emailError && <p className="text-xs text-destructive mt-1.5">{emailError}</p>}
+                  <p className="text-[11px] text-muted-foreground mt-1.5">Changes their login email immediately — no confirmation step.</p>
                 </div>
 
                 {/* Role */}

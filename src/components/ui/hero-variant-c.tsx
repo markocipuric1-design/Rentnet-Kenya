@@ -208,7 +208,7 @@ function TypeSelect({ value, onChange }: { value: string; onChange: (v: string) 
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
-export function HeroVariantC() {
+export function HeroVariantC({ activeListingsCount = 0 }: { activeListingsCount?: number }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("For Sale");
   const [faved, setFaved] = useState<boolean[]>([false, false]);
@@ -305,7 +305,7 @@ export function HeroVariantC() {
                   </div>
                 ))}
                 <div className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full px-4 py-2">
-                  <span className="text-white/70 text-xs">+12,400 listings waiting for you</span>
+                  <span className="text-white/70 text-xs">{activeListingsCount.toLocaleString()} listings waiting for you</span>
                   <ArrowRight className="h-3.5 w-3.5 text-primary" />
                 </div>
               </div>

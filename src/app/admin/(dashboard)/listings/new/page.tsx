@@ -150,6 +150,7 @@ function NewListingForm() {
     setError("");
     if (!owner) { setError("Select who this listing is for."); return; }
     if (!title.trim() || !price) { setError("Title and price are required."); return; }
+    if (!city.trim()) { setError("City / Town is required."); return; }
 
     setSubmitting(true);
     const res = await fetch("/api/admin/staff-listings", {
@@ -228,8 +229,8 @@ function NewListingForm() {
             {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
         </Field>
-        <Field label="City / Town">
-          <input value={city} onChange={(e) => setCity(e.target.value)} className={inputClass} placeholder="Nairobi" />
+        <Field label="City / Town" required>
+          <input value={city} onChange={(e) => setCity(e.target.value)} required className={inputClass} placeholder="Nairobi" />
         </Field>
       </div>
 

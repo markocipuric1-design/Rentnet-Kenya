@@ -7,6 +7,7 @@ import { Phone, Check, MessageCircle, Shield, Mail, Calculator, ChevronDown } fr
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/format-price";
 import { toAgentSlug } from "@/lib/utils";
+import { ClaimBusinessBadge } from "@/components/ui/claim-business-badge";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -39,6 +40,7 @@ type Owner = {
   phone: string | null;
   account_type: string;
   verified: boolean;
+  staff_managed: boolean | null;
 };
 
 type MarketData = {
@@ -309,6 +311,11 @@ export function ContactPanel({ listing, owner, marketData, currentUserId, sideba
               )}
             </div>
           </Link>
+          {owner.staff_managed && (
+            <div className="mb-4">
+              <ClaimBusinessBadge profileId={owner.id} fullWidth />
+            </div>
+          )}
           {owner.phone && (
             <div className="flex flex-col gap-2 mb-2">
               <a

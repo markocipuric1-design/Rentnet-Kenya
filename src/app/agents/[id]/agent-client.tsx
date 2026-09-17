@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { ClaimBusinessBadge } from "@/components/ui/claim-business-badge";
 import { slugToAgentId, toAgentSlug } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import { createClient } from "@/lib/supabase/client";
@@ -40,6 +41,7 @@ type AgentProfile = {
   service_areas: string[] | null;
   employee_count: number | null;
   founded_year: number | null;
+  staff_managed: boolean | null;
 };
 
 type AgentListing = {
@@ -701,7 +703,7 @@ export function AgentClient() {
         { data: reviewsData },
       ] = await Promise.all([
         supabase.from("profiles")
-          .select("id, full_name, account_type, verified, active, avatar_url, created_at, email, phone, cover_url, website, instagram, facebook, linkedin, youtube_url, specializations, service_areas, employee_count, founded_year")
+          .select("id, full_name, account_type, verified, active, avatar_url, created_at, email, phone, cover_url, website, instagram, facebook, linkedin, youtube_url, specializations, service_areas, employee_count, founded_year, staff_managed")
           .eq("id", resolvedId)
           .single(),
         supabase.from("listings")
@@ -880,6 +882,11 @@ export function AgentClient() {
                           </span>
                         )}
                       </div>
+                      {profile.staff_managed && (
+                        <div className="mt-2">
+                          <ClaimBusinessBadge profileId={profile.id} />
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         {profile.founded_year && (
                           <div className="flex items-center gap-1.5">

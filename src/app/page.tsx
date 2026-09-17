@@ -21,12 +21,15 @@ function pickRandom<T>(arr: T[]): T | null {
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data: homepageAds } = await supabase
-    .from("advertisements")
-    .select("id, title, description, cta_text, image_url, link_url")
-    .eq("placement", "homepage")
-    .eq("active", true)
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+  const [{ data: homepageAds }, { count: activeListingsCount }] = await Promise.all([
+    supabase
+      .from("advertisements")
+      .select("id, title, description, cta_text, image_url, link_url")
+      .eq("placement", "homepage")
+      .eq("active", true)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
+    supabase.from("listings").select("*", { count: "exact", head: true }).eq("status", "active"),
+  ]);
 
   const ads = homepageAds ?? [];
   const ad1 = pickRandom(ads);
@@ -34,7 +37,7 @@ export default async function Home() {
 
   return (
     <>
-      <HeroVariantC />
+      <HeroVariantC activeListingsCount={activeListingsCount ?? 0} />
       <CategorySlider />
       <Listings />
 

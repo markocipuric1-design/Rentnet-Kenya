@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Eye, EyeOff, Trash2, CheckCircle, Clock, Home, Save, X, Star, MessageCircle, Camera, Pencil, Globe, Phone, User, Building2, Users, Calendar, Tag, MapPin, ImagePlus, AlertTriangle, Zap, Wrench, ArrowRight, Megaphone, Heart, LayoutGrid, Settings as SettingsIcon } from "lucide-react";
+import { Plus, Eye, EyeOff, Trash2, CheckCircle, Clock, Home, Save, X, Star, MessageCircle, Camera, Pencil, Globe, Phone, User, Building2, Users, Calendar, Tag, MapPin, ImagePlus, AlertTriangle, Zap, Wrench, ArrowRight, Megaphone, Heart, LayoutGrid, Settings as SettingsIcon, Lock } from "lucide-react";
 
 function YoutubeLogo({ className }: { className?: string }) {
   return (
@@ -232,6 +232,12 @@ export default function DashboardPage() {
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordChanged, setPasswordChanged] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -402,6 +408,21 @@ export default function DashboardPage() {
     });
     setIsEditing(true);
     setActiveTab("settings");
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordError("");
+    if (newPassword.length < 8) { setPasswordError("Password must be at least 8 characters."); return; }
+    if (newPassword !== confirmPassword) { setPasswordError("Passwords do not match."); return; }
+    setChangingPassword(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    if (error) { setPasswordError(error.message); return; }
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordChanged(true);
+    setTimeout(() => setPasswordChanged(false), 3000);
   };
 
   const handleSaveProfile = async () => {
@@ -1657,6 +1678,53 @@ export default function DashboardPage() {
         </>)}
 
         {activeTab === "settings" && (<>
+        {/* Change Password */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
+          <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+            <Lock className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Change Password</h3>
+          </div>
+          <div className="px-5 py-4 flex flex-col gap-4 max-w-sm">
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">New password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className="w-full pl-9 pr-10 py-2.5 border border-border bg-background rounded-xl text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/50"
+                />
+                <button type="button" onClick={() => setShowNewPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Confirm new password</label>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat password"
+                className="w-full border border-border bg-background rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/50"
+              />
+            </div>
+            {passwordError && <p className="text-xs text-destructive">{passwordError}</p>}
+            <button
+              onClick={handleChangePassword}
+              disabled={changingPassword || !newPassword || !confirmPassword}
+              className={`self-start flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${passwordChanged ? "bg-emerald-500 text-white" : "bg-primary hover:bg-primary/90 text-primary-foreground"} disabled:opacity-50`}
+            >
+              {changingPassword
+                ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                : <Lock className="h-4 w-4" />}
+              {changingPassword ? "Updating…" : passwordChanged ? "✓ Password updated" : "Update password"}
+            </button>
+          </div>
+        </div>
+
         {/* Push Notifications */}
         <div className="mt-10 mb-4">
           <div className="bg-card border border-border rounded-2xl overflow-hidden">

@@ -74,6 +74,7 @@ type Owner = {
   phone: string | null;
   account_type: string;
   verified: boolean;
+  staff_managed: boolean | null;
 };
 
 type SimilarListing = {
@@ -178,7 +179,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       user?.id
         ? supabase.from("saved_listings").select("id").eq("user_id", user.id).eq("listing_id", listing.id).maybeSingle()
         : Promise.resolve({ data: null }),
-      supabase.from("profiles").select("id, slug, full_name, avatar_url, phone, account_type, verified").eq("id", listing.user_id).single(),
+      supabase.from("profiles").select("id, slug, full_name, avatar_url, phone, account_type, verified, staff_managed").eq("id", listing.user_id).single(),
       supabase.from("listings").select("id, slug, title, city, price, rooms, area, type").eq("status", "active").eq("city", listing.city).neq("id", listing.id).limit(4),
       supabase.from("advertisements").select("id, title, image_url, link_url").eq("placement", "sidebar").eq("active", true).or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
       (() => {

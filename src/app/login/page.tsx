@@ -61,14 +61,6 @@ export default function LoginPage() {
     setResendSent(true);
   };
 
-  const handleFacebook = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "facebook",
-      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
-    });
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
@@ -100,24 +92,14 @@ export default function LoginPage() {
 
                 <form onSubmit={handleSubmit} className="relative flex flex-col gap-5">
                   {/* Social login */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={handleGoogle}
-                      className="flex items-center justify-center gap-2 border border-border hover:border-primary/40 hover:bg-accent rounded-xl py-2.5 text-sm font-medium transition-all"
-                    >
-                      <span className="text-base">G</span>
-                      Google
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleFacebook}
-                      className="flex items-center justify-center gap-2 border border-border hover:border-primary/40 hover:bg-accent rounded-xl py-2.5 text-sm font-medium transition-all"
-                    >
-                      <span className="text-base">f</span>
-                      Facebook
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGoogle}
+                    className="flex items-center justify-center gap-2 border border-border hover:border-primary/40 hover:bg-accent rounded-xl py-2.5 text-sm font-medium transition-all"
+                  >
+                    <span className="text-base">G</span>
+                    Google
+                  </button>
 
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-px bg-border" />

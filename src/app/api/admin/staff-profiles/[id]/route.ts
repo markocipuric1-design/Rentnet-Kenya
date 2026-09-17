@@ -28,6 +28,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "No editable fields provided" }, { status: 400 });
     }
 
+    // profiles.email is just a display copy — the real login credential lives
+    // in auth.users, so it has to be updated there too or the two go out of sync.
+    if (typeof update.email === "string" && update.email.trim()) {
+      const { error: authErr } = await admin.auth.admin.updateUserById(id, {
+        email: update.email.trim(),
+        email_confirm: true,
+      });
+      if (authErr) return NextResponse.json({ error: `Could not update login email: ${authErr.message}` }, { status: 500 });
+    }
+
     const { error } = await admin.from("profiles").update(update).eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
